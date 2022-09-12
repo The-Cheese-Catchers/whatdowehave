@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+<body>
+    <h1>Welcome to WhatDoWeHave!</h1>
+    <p>Homepage currently under development. Try logging in for now, or create an account if you don't already have one!</p>
+    <table>
+        <tr>
+            <th scope="col">Item</th>
+        </tr>
+        {% for row in p %}
+            <tr>
+                <th scope="row">{{ row[0] }}</th>
+                <td>{{ row[1] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+{% endblock content %}
