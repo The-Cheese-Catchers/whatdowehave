@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from flask_wtf.file import FileField, FileAllowed
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
 from wdwh.models import User
 
@@ -24,3 +25,13 @@ class LoginForm(FlaskForm):
                              validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
+
+class EnterRecipeForm(FlaskForm):
+    recipe_name = StringField('Recipe Name',
+                              validators=[DataRequired()])
+    ingredients = TextAreaField('Enter ingredients, separated by a comma (,)',
+                                validators=[DataRequired()])
+    instructions = TextAreaField('Write some instructions on how to make this recipe',
+                                 validators=[DataRequired()])
+    picture = FileField('Upload a picture of the finished product', validators=[FileAllowed(['jpg','png'])])
+    privacy = SubmitField('Make Recipe Public')

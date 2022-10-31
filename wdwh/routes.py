@@ -34,7 +34,7 @@ def register():
         return redirect(url_for("login"))
     return render_template("register.html", title="Register", form=register_form)
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
     login_form = LoginForm()
     if login_form.validate_on_submit():
@@ -47,3 +47,11 @@ def login():
         else:
             flash("Login unsuccessful. Please check username and password", "danger")
     return render_template("login.html", title="login", form=login_form)
+
+@app.route("/enter_recipe")
+def enter_recipe():
+    recipe_form = EnterRecipeForm()
+    if recipe_form.validate_on_submit():
+        flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
+        return redirect(url_for("home"))
+    return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form)
