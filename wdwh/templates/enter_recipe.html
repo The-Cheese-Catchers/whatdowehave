@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Enter Recipe Information</legend>
+                <div class="form-group">
+                    {{ form.recipe_name.label(class="form-control-label") }}
+                    {% if form.recipe_name.errors %}
+                        {{ form.recipe_name(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.recipe_name.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.recipe_name(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.ingredients.label(class="form-control-label") }}
+                    {% if form.ingredients.errors %}
+                        {{ form.ingredients(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.ingredients.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.ingredients(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.instructions.label(class="form-control-label") }}
+                    {% if form.instructions.errors %}
+                        {{ form.instructions(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.instructions.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.instructions(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.picture.label() }}
+                    {{ form.picture(class="form-control-file") }}
+                    {% if form.picture.errors %}
+                        {% for error in form.picture.errors %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endfor %}
+                </div>
+                <div class="form-check">
+                    {{ form.privacy(class="form-check-input") }}
+                    {{ form.privacy.label(class="form-check-label") }}
+                </div>
+            </fieldset>
+            <div class="form-group">
+                {{ form.submit(class="btn btn-outline-info") }}
+            </div>
+            <small class="text-muted ml-2">
+                <a href="#">Forgot Password?</a>
+            </small>
+        </form>
+    </div>
+    <div class="border-top pt-3">
+        <small class="text-muted">
+            Need An Account? <a class="ml-2" href="{{ url_for('register') }}">Sign Up Now</a>
+        </small>
+    </div>
+{% endblock content %}
