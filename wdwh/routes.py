@@ -4,7 +4,7 @@ from wdwh import app, db, bcrypt
 from wdwh.forms import *
 from wdwh.models import User, Ingredient, Pantry, Recipe
 from flask import Flask, render_template, flash, redirect, url_for
-from flask_login import login_user
+from flask_login import login_user, current_user, logout_user, login_required
 
 def create_connection(db_file):
     cnxn = None
@@ -23,6 +23,8 @@ def home():
 
 @app.route("/register", methods=["GET","POST"])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
     register_form = RegistrationForm()
     if register_form.validate_on_submit():
         # Add account information to database
@@ -36,6 +38,8 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
     login_form = LoginForm()
     if login_form.validate_on_submit():
         # Check database if username/password combo are valid
@@ -45,8 +49,13 @@ def login():
             flash(f"Welcome back!")
             return redirect(url_for("home"))
         else:
-            flash("Login unsuccessful. Please check username and password", "danger")
+            flash("Login unsuccessful. Please check username and password.", "danger")
     return render_template("login.html", title="login", form=login_form)
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("home"))
 
 @app.route("/enter_recipe")
 def enter_recipe():
