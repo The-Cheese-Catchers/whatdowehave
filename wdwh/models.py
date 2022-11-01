@@ -1,42 +1,53 @@
 from wdwh import db, login_manager
-from flask_login import UserMixin
+from wdwh.db_functions import load_data
 
 @login_manager.user_loader
 def load_user(userid):
-    return User.query.get(int(userid))
+    data = load_data()
+    if int(userid) <= len(data):
+        user_data = list(data.values())[int(userid)-1]
+        user_username = list(data.keys())[int(userid)-1]
+        user_password = user_data["password"]
+        user_pantry = user_data["pantry"]
+        user = User(userid, user_username, user_password, user_pantry)
+        return user
 
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
+
+def load_user_from_username(username):
+    data = load_data()
+    if username in data.keys():
+        user_data = data[username]
+        user_id = user_data["id"]
+        user_password = user_data["password"]
+        user_pantry = user_data["pantry"]
+        user = User(user_id, username, user_password, user_pantry)
+        return user
+
+
+class User():
+    def __init__(self, id, username, password, pantry):
+        self.id = id
+        self.username = username
+        self.password = password
+        self.pantry = pantry
     
     def __repr__(self):
         return f"User {self.username}"
-
-class Ingredient(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    family = db.Column(db.String(255), nullable=False)
-    name = db.Column(db.String(255), nullable=False)
-    subtype = db.Column(db.String(255), nullable=False)
     
-    def __repr__(self):
-        return f"{self.family}, {self.subtype} {self.name}"
-
-class Pantry(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id'), primary_key=True)
-    ingredients = db.relationship('Ingredient', backref='FoundIn', lazy=True)
+    def is_authenticated(self):
+        data = load_data()
+        if self.username in data.keys():
+            return True
+        return False
     
-    def __repr__(self):
-        return f"{self.user_id} has {self.quantity} units of {self.ingredient_id}"
-
-class Recipe(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id'), primary_key=True)
+    def is_active(self):
+        return self.is_authenticated()
     
-    def __repr__(self):
-        return f"{self.name}"
+    def is_anonymous(self):
+        if self.is_authenticated():
+            return False
+        return True
+    
+    def get_id(self):
+        data = load_data()
+        return str(data[self.username]["id"])
