@@ -2,13 +2,10 @@
 {% block content %}
 <body>
     <h1>Welcome to We Got Food at Home!</h1>
-    
-    {% if recipes %}
-        {% for recipe in recipes.keys() %}
-            <p><i> {{recipe}} </i></p>
-            <p> instructions: {{recipes[recipe]["instructions"]}}</p>
-        {% endfor %}
-    
-    {% endif %}
+    <p>This is a project for CSCI 4440 Software Design and Documentation at Rensselaer Polytechnic Institute in Fall 2022. The five members of the team are Kentaro Yasuda, Rupak Stephen, Antonio Martinez, Vinh Tran, and Jaimin Vyas.</p>
+    <p>This application is called We Got Food At Home, and it's a virtual pantry that keeps track of what ingredients you have, and gives you suggestions on what to make, so you never spend more than a few minutes thinking about it.</p>
+    <figure>
+        <img src="{{ url_for('static', filename='Mushroom-Spinach-Pasta.jpg')}}" align="left" height="350" width="300"/>
+    </figure>
 </body>
 {% endblock content %}

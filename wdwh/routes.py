@@ -18,10 +18,7 @@ def create_connection(db_file):
 @app.route("/")
 @app.route("/home")
 def home():
-    user_recipes = None
-    if current_user.is_authenticated:
-        user_recipes = current_user.recipes
-    return render_template("home.html", title="home", recipes = user_recipes)
+    return render_template("home.html", title="Home")
 
 @app.route("/register", methods=["GET","POST"])
 def register():
@@ -34,7 +31,7 @@ def register():
             return redirect(url_for("login"))
         else:
             flash("Username already taken, please pick another one", "danger")
-    return render_template("register.html", title="register", form=register_form)
+    return render_template("register.html", title="Register", form=register_form)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -46,10 +43,10 @@ def login():
         if db_functions.validate_login(login_form.username.data, login_form.password.data):
             login_user(load_user_from_username(login_form.username.data), remember=login_form.remember.data)
             flash(f"Welcome back {login_form.username.data}!","success")
-            return redirect(url_for("home"))
+            return redirect(url_for("my_pantry"))
         else:
             flash("Login unsuccessful. Please check username and password.", "danger")
-    return render_template("login.html", title="login", form=login_form)
+    return render_template("login.html", title="Login", form=login_form)
 
 @app.route("/logout")
 def logout():
@@ -62,9 +59,16 @@ def enter_recipe():
     if recipe_form.validate_on_submit():
         if db_functions.addRecipe(current_user.username, recipe_form):
             flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
-            return redirect(url_for("home"))
+            return redirect(url_for("my_pantry"))
         #print(f"Recipe name: {recipe_form.recipe_name.data}")
         else:
             flash("Recipe with same name already made.","danger")
         
     return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form)
+
+@app.route("/my_pantry")
+def my_pantry():
+    user_recipes = None
+    if current_user.is_authenticated:
+        user_recipes = current_user.recipes
+    return render_template("pantry.html", title="My Pantry", recipes = user_recipes)

@@ -41,4 +41,5 @@ class EnterRecipeForm(FlaskForm):
         "Upload a picture of the finished product",
         validators=[FileAllowed(["jpg", "png"])],
     )
-    submit = SubmitField("Make Recipe Public")
+    make_public = BooleanField("Make Recipe Public")
+    submit = SubmitField("Submit")

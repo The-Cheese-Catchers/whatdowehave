@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block content %}
+<body>
+    <h1>Welcome to your pantry!</h1>
+    <p>Here's what you currently have:</p>
+    {% if recipes %}
+        {% for recipe in recipes.keys() %}
+            <p><i> {{recipe}} </i></p>
+            <p> instructions: {{recipes[recipe]["instructions"]}}</p>
+        {% endfor %}
+    
+    {% endif %}
+</body>
+{% endblock content %}
