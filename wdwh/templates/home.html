@@ -3,16 +3,12 @@
 <body>
     <h1>Welcome to We Got Food at Home!</h1>
     
-    <table>
-        <tr>
-            <th scope="col">Item</th>
-        </tr>
-        {% for row in p %}
-            <tr>
-                <th scope="row">{{ row[0] }}</th>
-                <td>{{ row[1] }}</td>
-            </tr>
+    {% if recipes %}
+        {% for recipe in recipes.keys() %}
+            <p><i> {{recipe}} </i></p>
+            <p> instructions: {{recipes[recipe]["instructions"]}}</p>
         {% endfor %}
-    </table>
+    
+    {% endif %}
 </body>
 {% endblock content %}

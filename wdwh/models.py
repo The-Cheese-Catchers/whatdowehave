@@ -9,7 +9,8 @@ def load_user(userid):
         user_username = list(data.keys())[int(userid)-1]
         user_password = user_data["password"]
         user_pantry = user_data["pantry"]
-        user = User(userid, user_username, user_password, user_pantry)
+        user_recipes = user_data["recipes"]
+        user = User(userid, user_username, user_password, user_pantry, user_recipes)
         return user
 
 
@@ -20,16 +21,18 @@ def load_user_from_username(username):
         user_id = user_data["id"]
         user_password = user_data["password"]
         user_pantry = user_data["pantry"]
-        user = User(user_id, username, user_password, user_pantry)
+        user_recipes = user_data["recipes"]
+        user = User(user_id, username, user_password, user_pantry, user_recipes)
         return user
 
 
 class User():
-    def __init__(self, id, username, password, pantry):
+    def __init__(self, id, username, password, pantry, recipes):
         self.id = id
         self.username = username
         self.password = password
         self.pantry = pantry
+        self.recipes = recipes
     
     def __repr__(self):
         return f"User {self.username}"
@@ -44,9 +47,7 @@ class User():
         return self.is_authenticated()
     
     def is_anonymous(self):
-        if self.is_authenticated():
-            return False
-        return True
+        return not self.is_authenticated()
     
     def get_id(self):
         data = load_data()

@@ -14,6 +14,15 @@ def load_data():
         
     return json_data_file
 
+def save_data(new_data):
+    """
+        Saves by overwriting the json file
+    """
+    data_file = open(DB_PATH, 'w+')
+    json_dumpfile = json.dumps(new_data, indent=4)
+    data_file.write(json_dumpfile)
+    data_file.close()
+
 
 def create_user(username: str, password: str) -> bool:
     """
@@ -27,8 +36,10 @@ def create_user(username: str, password: str) -> bool:
     hashed_password = bcrypt.hashpw(password.encode(), cryp_salt).decode()
     user_data = {
         "id" : len(data) + 1,
+        "username" : username,
         "password" : hashed_password,
-        "pantry" : {}
+        "pantry" : {},
+        "recipes" : {}
     }
     data[username] = user_data
     
@@ -47,4 +58,26 @@ def validate_login(username: str, password: str) -> bool:
     
     if username not in data.keys():
         return False
+    
     return bcrypt.checkpw(password.encode(), data[username]["password"].encode())
+
+def addRecipe(username, recipe_form):
+    data = load_data()
+
+    recipes = data[username]["recipes"]
+
+    recipe_name = recipe_form.recipe_name.data
+
+    if recipe_name in recipes.keys():
+        return False
+
+    recipe_details = {
+        "ingredients" : recipe_form.ingredients.data,
+        "instructions" : recipe_form.instructions.data
+        # TO DO: add picure
+    }
+
+    recipes[recipe_name] = recipe_details
+
+    save_data(data)
+    return True
