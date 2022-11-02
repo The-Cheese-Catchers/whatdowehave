@@ -54,7 +54,7 @@ def logout():
     logout_user()
     return redirect(url_for("home"))
 
-@app.route("/enter_recipe")
+@app.route("/enter_recipe", methods=["GET", "POST"])
 def enter_recipe():
     recipe_form = EnterRecipeForm()
     if recipe_form.validate_on_submit():

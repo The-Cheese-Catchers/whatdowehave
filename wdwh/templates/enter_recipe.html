@@ -51,11 +51,8 @@
                         {% for error in form.picture.errors %}
                             <span class="text-danger">{{ error }}</span>
                         {% endfor %}
-                </div>
-                <div class="form-check">
-                    {{ form.privacy(class="form-check-input") }}
-                    {{ form.privacy.label(class="form-check-label") }}
-                </div>
+                    {% endif %}
+                
             </fieldset>
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-info") }}

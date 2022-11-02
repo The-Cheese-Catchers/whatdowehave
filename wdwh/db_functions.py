@@ -47,5 +47,4 @@ def validate_login(username, password):
     
     if username not in data.keys():
         return False
-    
     return bcrypt.checkpw(password.encode(), data[username]["password"].encode())
