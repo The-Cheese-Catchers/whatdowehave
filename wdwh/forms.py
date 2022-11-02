@@ -39,6 +39,13 @@ class EnterRecipeForm(FlaskForm):
     make_public = BooleanField("Make Recipe Public")
     submit = SubmitField("Submit")
 
+
 class SearchRecipeForm(FlaskForm):
     query = StringField("Search for Recipe", validators=[DataRequired()])
-    submit = SubmitField("Submit")
+    submit = SubmitField("Search")
+    
+
+class AddIngredientForm(FlaskForm):
+    name = StringField("Ingredient Name", validators=[DataRequired()])
+    qty = StringField("Amount Bought", validators=[DataRequired()])
+    submit = SubmitField("Add")
