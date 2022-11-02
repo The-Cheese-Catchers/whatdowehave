@@ -72,7 +72,7 @@ def search_recipe():
     return render_template("search_recipe.html", title="Search Recipe", form=search_form)
 
 
-@app.route("/my_pantry")
+@app.route("/my_pantry", methods=["GET", "POST"])
 @login_required
 def my_pantry():
     user_recipes = None
