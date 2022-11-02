@@ -66,9 +66,17 @@ def enter_recipe():
         
     return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form)
 
+@app.route("/search_recipe", methods=["GET", "POST"])
+def search_recipe():
+    search_form = SearchRecipeForm()
+    if search_form.validate_on_submit():
+        recipe_name = search_form.query.data
+        # SEARCH API FOR THIS RECIPE AND LIST OUT DETAILS ON SEPARATE PAGE
+    return render_template("search_recipe.html", title="Search Recipe", form=search_form)
+
 @app.route("/my_pantry")
 def my_pantry():
     user_recipes = None
     if current_user.is_authenticated:
         user_recipes = current_user.recipes
-    return render_template("pantry.html", title="My Pantry", recipes = user_recipes)
+    return render_template("pantry.html", title="My Pantry", recipes=user_recipes)
