@@ -18,8 +18,10 @@ def create_connection(db_file):
 @app.route("/")
 @app.route("/home")
 def home():
-    p_data = [[]]
-    return render_template("home.html", title="home", p=p_data)
+    user_recipes = None
+    if current_user.is_authenticated:
+        user_recipes = current_user.recipes
+    return render_template("home.html", title="home", recipes = user_recipes)
 
 @app.route("/register", methods=["GET","POST"])
 def register():
@@ -43,7 +45,7 @@ def login():
     if login_form.validate_on_submit():
         if db_functions.validate_login(login_form.username.data, login_form.password.data):
             login_user(load_user_from_username(login_form.username.data), remember=login_form.remember.data)
-            flash(f"Welcome back {login_form.username.data}!")
+            flash(f"Welcome back {login_form.username.data}!","success")
             return redirect(url_for("home"))
         else:
             flash("Login unsuccessful. Please check username and password.", "danger")
@@ -58,6 +60,11 @@ def logout():
 def enter_recipe():
     recipe_form = EnterRecipeForm()
     if recipe_form.validate_on_submit():
-        flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
-        return redirect(url_for("home"))
+        if db_functions.addRecipe(current_user.username, recipe_form):
+            flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
+            return redirect(url_for("home"))
+        #print(f"Recipe name: {recipe_form.recipe_name.data}")
+        else:
+            flash("Recipe with same name already made.","danger")
+        
     return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form)

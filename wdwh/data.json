@@ -1,7 +1,21 @@
 {
     "admin": {
         "id": 1,
+        "username": "admin",
         "password": "$2b$12$kRMB7fXncYfY42Vea4RFV.YDD/R6Vw7VQrrEVbhrVjmjLYh1d3LIa",
-        "pantry": {}
+        "pantry": {},
+        "recipes": {}
+    },
+    "test": {
+        "id": 2,
+        "username": "test",
+        "password": "$2b$12$.fa0CbHdWO3MNWMzjSZQX.xjH4BPGCH93r7QtRS.2u6/wtvcpBDIu",
+        "pantry": {},
+        "recipes": {
+            "boiled eggs": {
+                "ingredients": "eggs",
+                "instructions": "boil egg"
+            }
+        }
     }
 }
