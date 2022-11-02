@@ -34,4 +34,4 @@ class EnterRecipeForm(FlaskForm):
     instructions = TextAreaField('Write some instructions on how to make this recipe',
                                  validators=[DataRequired()])
     picture = FileField('Upload a picture of the finished product', validators=[FileAllowed(['jpg','png'])])
-    privacy = SubmitField('Make Recipe Public')
+    submit = SubmitField('Make Recipe Public')

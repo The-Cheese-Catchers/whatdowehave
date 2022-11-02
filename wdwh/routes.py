@@ -43,7 +43,7 @@ def login():
     if login_form.validate_on_submit():
         if db_functions.validate_login(login_form.username.data, login_form.password.data):
             login_user(load_user_from_username(login_form.username.data), remember=login_form.remember.data)
-            flash(f"Welcome back!")
+            flash(f"Welcome back {login_form.username.data}!")
             return redirect(url_for("home"))
         else:
             flash("Login unsuccessful. Please check username and password.", "danger")
@@ -54,7 +54,7 @@ def logout():
     logout_user()
     return redirect(url_for("home"))
 
-@app.route("/enter_recipe")
+@app.route("/enter_recipe", methods=["GET", "POST"])
 def enter_recipe():
     recipe_form = EnterRecipeForm()
     if recipe_form.validate_on_submit():
