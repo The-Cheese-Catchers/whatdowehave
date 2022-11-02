@@ -6,15 +6,6 @@ from wdwh.models import User, load_user, load_user_from_username
 from flask import Flask, render_template, flash, redirect, url_for
 from flask_login import login_user, current_user, logout_user, login_required
 
-def create_connection(db_file):
-    cnxn = None
-    try:
-        cnxn = sqlite3.connect(db_file)
-        return cnxn
-    except Error as e:
-        print(e)
-        quit()
-
 @app.route("/")
 @app.route("/home")
 def home():
@@ -48,12 +39,16 @@ def login():
             flash("Login unsuccessful. Please check username and password.", "danger")
     return render_template("login.html", title="Login", form=login_form)
 
+
 @app.route("/logout")
+@login_required
 def logout():
     logout_user()
     return redirect(url_for("home"))
 
+
 @app.route("/enter_recipe", methods=["GET", "POST"])
+@login_required
 def enter_recipe():
     recipe_form = EnterRecipeForm()
     if recipe_form.validate_on_submit():
@@ -66,7 +61,9 @@ def enter_recipe():
         
     return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form)
 
+
 @app.route("/search_recipe", methods=["GET", "POST"])
+@login_required
 def search_recipe():
     search_form = SearchRecipeForm()
     if search_form.validate_on_submit():
@@ -74,9 +71,15 @@ def search_recipe():
         # SEARCH API FOR THIS RECIPE AND LIST OUT DETAILS ON SEPARATE PAGE
     return render_template("search_recipe.html", title="Search Recipe", form=search_form)
 
+
 @app.route("/my_pantry")
+@login_required
 def my_pantry():
     user_recipes = None
     if current_user.is_authenticated:
         user_recipes = current_user.recipes
-    return render_template("pantry.html", title="My Pantry", recipes=user_recipes)
+    add_ingr_form = AddIngredientForm()
+    if add_ingr_form.validate_on_submit():
+        # ADD NEW INGREDIENT TO PANTRY
+        return render_template("pantry.html", title="My Pantry", recipes=user_recipes, form=add_ingr_form)
+    return render_template("pantry.html", title="My Pantry", recipes=user_recipes, form=add_ingr_form)
