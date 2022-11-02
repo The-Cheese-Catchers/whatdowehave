@@ -15,11 +15,6 @@ class RegistrationForm(FlaskForm):
     )
     submit = SubmitField("Sign Up")
 
-    # def validate_username(self, username):
-    #     user = User.query.filter_by(username=username.data).first()
-    #     if user:
-    #         raise ValidationError("That username is taken. Please choose a different one.")
-
 
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
@@ -42,4 +37,8 @@ class EnterRecipeForm(FlaskForm):
         validators=[FileAllowed(["jpg", "png"])],
     )
     make_public = BooleanField("Make Recipe Public")
+    submit = SubmitField("Submit")
+
+class SearchRecipeForm(FlaskForm):
+    query = StringField("Search for Recipe", validators=[DataRequired()])
     submit = SubmitField("Submit")
