@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, IntegerField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
-from wdwh.models import User
+from wdwh.models import User, Ingredient
 
 
 class RegistrationForm(FlaskForm):
@@ -52,5 +52,11 @@ class SearchRecipeForm(FlaskForm):
 
 class AddIngredientForm(FlaskForm):
     name = StringField("Ingredient Name", validators=[DataRequired()])
-    qty = StringField("Amount Bought", validators=[DataRequired()])
-    submit = SubmitField("Add")
+    qty = IntegerField("Amount", validators=[DataRequired()])
+    add = SubmitField("Add")
+    remove = SubmitField("Remove")
+
+    def validate_qty(self, qty):
+        if qty.data < 1:
+            raise ValidationError('Improper amount.')
+            
