@@ -7,6 +7,9 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "e030a8c3cbfc01c4a941a37f0d527d19"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
 db = SQLAlchemy(app)
+
+# if db.inspect(db.engine).get_table_names() == []:
+#     db.create_all()
 # To create table: db.create_all()
 # To delete table: db.drop_all()
 

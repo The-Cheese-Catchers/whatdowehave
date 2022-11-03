@@ -4,11 +4,24 @@
     <h1>Welcome to your pantry!</h1>
     
     <p>Here's what you currently have:</p>
-    {% if all_ingr %}
-        {% for ingr in all_ingr %}
-            <p><i> {{ ingr.name }} [{{ ingr.qty }}]</i></p>
-        {% endfor %}
     
+    {% if all_ingr %}
+        <table>
+            <tr>
+                <th>Ingredient Name</th>
+                <th>Amount</th>
+            </tr>
+            {% for ingr in all_ingr %}
+                <tr>
+                    <td>{{ingr.name}}</td>
+                    <td>{{ingr.qty}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <small class="text-muted">
+            Your pantry is currently empty, try adding some ingredients!
+        </small>    
     {% endif %}
 </body>
 {% endblock content %}
@@ -46,6 +59,7 @@
         <div class="form-group">
             {{ add_form.add(class="btn btn-outline-info") }}
             {{ add_form.remove(class="btn btn-outline-info") }}
+            {{ add_form.delete(class="btn btn-outline-info") }}
         </div>
     </form>
 </div>

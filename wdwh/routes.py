@@ -9,8 +9,8 @@ from flask_login import login_user, current_user, logout_user, login_required
 @app.route("/")
 @app.route("/home")
 def home():
-    if current_user.is_authenticated:
-        return redirect(url_for("my_pantry"))
+    # if current_user.is_authenticated:
+    #     return redirect(url_for("my_pantry"))
     return render_template("home.html", title="Home")
 
 @app.route("/register", methods=["GET","POST"])
@@ -74,28 +74,36 @@ def search_recipe():
 @app.route("/my_pantry", methods=["GET", "POST"])
 @login_required
 def my_pantry():
+    """
+        TODO:
+        - Make Ingredients and User class (for OOP)
+        - Make delete button on my pantry page to delete ingredients
+    """
     add_ingr_form = AddIngredientForm()
     if add_ingr_form.validate_on_submit():
-        print(f"Add: {add_ingr_form.add.data}, type: {type(add_ingr_form.add.data)}")
-        print(f"Remove: {add_ingr_form.remove.data}, type: {type(add_ingr_form.remove.data)}")
-        present_ingr = Ingredient.query.filter_by(name=add_ingr_form.name.data, user_id=current_user.id).first()
-        if present_ingr:
-            if add_ingr_form.remove.data:
-                if present_ingr.qty < add_ingr_form.qty.data:
-                    flash("Tried to remove a higher amount than present in the pantry.", "danger")
-                else:
-                    present_ingr.qty -= add_ingr_form.qty.data
-                    db.session.commit()
-            else:
-                present_ingr.qty += add_ingr_form.qty.data
-                db.session.commit()
-        else:
-            if add_ingr_form.remove.data:
+        # Capitalize all ingredients
+        ingr_name = add_ingr_form.name.data.capitalize()
+        qty = add_ingr_form.qty.data
+
+        # Adding to the Pantry
+        if add_ingr_form.add.data:
+            current_user.addToPantry(ingr_name, qty)
+        # Removing from the Pantry
+        if add_ingr_form.remove.data:
+            if not current_user.getIngredientFromPantry(ingr_name):
                 flash("Tried to remove amount from ingredient not in pantry.", "danger")
             else:
-                ingr = Ingredient(name=add_ingr_form.name.data, qty=add_ingr_form.qty.data, user_id=current_user.id)
-                db.session.add(ingr)
-                db.session.commit()
+                if current_user.getIngredientAmount(ingr_name) < qty:
+                    flash("Tried to remove a higher amount than present in the pantry.", "danger")
+                else:
+                    current_user.removeFromPantry(ingr_name, qty)
+        # Deleting item from the Pantry
+        if add_ingr_form.delete.data:
+            if not current_user.getIngredientFromPantry(ingr_name):
+                flash("Tried to delete an ingredient not in pantry.", "danger")
+            else:
+                current_user.deleteFromPantry(ingr_name)
+                
         return redirect(url_for("my_pantry"))
     all_ingr = Ingredient.query.filter_by(user_id=current_user.id).all()
     return render_template("pantry.html", title="My Pantry", add_form=add_ingr_form, all_ingr=all_ingr)

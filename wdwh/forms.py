@@ -55,6 +55,7 @@ class AddIngredientForm(FlaskForm):
     qty = IntegerField("Amount", validators=[DataRequired()])
     add = SubmitField("Add")
     remove = SubmitField("Remove")
+    delete = SubmitField("Delete")
 
     def validate_qty(self, qty):
         if qty.data < 1:
