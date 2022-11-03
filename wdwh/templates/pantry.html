@@ -2,46 +2,52 @@
 {% block content %}
 <body>
     <h1>Welcome to your pantry!</h1>
-    <div class="content-section">
-        <form method="POST" action="">
-            {{ form.hidden_tag() }}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Add Ingredients</legend>
-                <div class="form-group">
-                    {{ form.name.label(class="form-control-label") }}
-                    {% if form.name.errors %}
-                        {{ form.name(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.name.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.name(class="form-control form-control-lg") }}
-                    {% endif %}
-                    {{ form.qty.label(class="form-control-label") }}
-                    {% if form.qty.errors %}
-                        {{ form.qty(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.qty.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.qty(class="form-control form-control-lg") }}
-                    {% endif %}
-                    {{ form.submit(class="btn btn-outline-info") }}
-                </div>
-            </fieldset>
-        </form>
-    </div>
+    
     <p>Here's what you currently have:</p>
-    {% if recipes %}
-        {% for recipe in recipes.keys() %}
-            <p><i> {{recipe}} </i></p>
-            <p> instructions: {{recipes[recipe]["instructions"]}}</p>
+    {% if all_ingr %}
+        {% for ingr in all_ingr %}
+            <p><i> {{ ingr.name }} [{{ ingr.qty }}]</i></p>
         {% endfor %}
     
     {% endif %}
 </body>
 {% endblock content %}
+{% block side %}
+<div class="content-section">
+    <form method="POST" action="">
+        {{ add_form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Change Ingredients</legend>
+            <div class="form-group">
+                {{ add_form.name.label(class="form-control-label") }}
+                {% if add_form.name.errors %}
+                    {{ add_form.name(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in add_form.name.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ add_form.name(class="form-control form-control-lg") }}
+                {% endif %}
+                {{ add_form.qty.label(class="form-control-label") }}
+                {% if add_form.qty.errors %}
+                    {{ add_form.qty(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in add_form.qty.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ add_form.qty(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ add_form.add(class="btn btn-outline-info") }}
+            {{ add_form.remove(class="btn btn-outline-info") }}
+        </div>
+    </form>
+</div>
+
+{% endblock side %}

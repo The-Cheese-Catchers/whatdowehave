@@ -67,8 +67,9 @@ class User(db.Model, UserMixin):
 class Ingredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    qty = db.Column(db.Integer, nullable=False)
     exp_date = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
-        return f"Ingredient('{self.name}', '{self.exp_date}')"
+        return f"Ingredient('{self.name}', '{self.qty}')"
