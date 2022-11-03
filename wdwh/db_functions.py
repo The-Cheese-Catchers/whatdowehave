@@ -1,8 +1,9 @@
-import json
-import bcrypt
-from wdwh import cryp_salt, login_manager
-from flask_login import UserMixin
+# import json
+# import bcrypt
+# from wdwh import login_manager
+# from flask_login import UserMixin
 
+'''
 DB_PATH = "wdwh/data.json"
 
 def load_data():
@@ -81,3 +82,4 @@ def addRecipe(username, recipe_form):
 
     save_data(data)
     return True
+'''
