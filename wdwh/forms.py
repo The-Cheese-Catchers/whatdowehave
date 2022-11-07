@@ -28,11 +28,21 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login")
 
 
+class AddIngredientForm(FlaskForm):
+    ingr_name = StringField("Ingredient Name", validators=[DataRequired()])
+    qty = IntegerField("Amount", validators=[DataRequired()])
+    add = SubmitField("Add")
+    remove = SubmitField("Remove")
+
+    def validate_qty(self, qty):
+        if qty.data < 1:
+            raise ValidationError('Improper amount.')
+
 class EnterRecipeForm(FlaskForm):
     recipe_name = StringField("Recipe Name", validators=[DataRequired()])
-    ingredients = TextAreaField(
-        "Enter ingredients, separated by a comma (,)", validators=[DataRequired()]
-    )
+    ingredients = TextAreaField("Ingredients: enter name, amount followed by a ; example: Eggs, 4; Milk, 1")
+    # ingredients = FieldList(FormField(AddIngredientForm),min_entries=1)
+    
     instructions = TextAreaField(
         "Write some instructions on how to make this recipe",
         validators=[DataRequired()],
@@ -43,21 +53,10 @@ class EnterRecipeForm(FlaskForm):
     )
     make_public = BooleanField("Make Recipe Public")
     submit = SubmitField("Submit")
+    
 
 
 class SearchRecipeForm(FlaskForm):
     query = StringField("Search for Recipe", validators=[DataRequired()])
     submit = SubmitField("Search")
-    
-
-class AddIngredientForm(FlaskForm):
-    name = StringField("Ingredient Name", validators=[DataRequired()])
-    qty = IntegerField("Amount", validators=[DataRequired()])
-    add = SubmitField("Add")
-    remove = SubmitField("Remove")
-    delete = SubmitField("Delete")
-
-    def validate_qty(self, qty):
-        if qty.data < 1:
-            raise ValidationError('Improper amount.')
             

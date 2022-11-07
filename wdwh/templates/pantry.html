@@ -15,6 +15,28 @@
                 <tr>
                     <td>{{ingr.name}}</td>
                     <td>{{ingr.qty}}</td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal{{ingr.id}}">Delete</button>
+                        <!-- Modal -->
+                        <div class="modal fade" id="deleteModal{{ingr.id}}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel">Delete {{ ingr.name }}?</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <form action="{{ url_for('delete_ingredient', ingredient_id=ingr.id) }}" method="POST">
+                                    <input class="btn btn-danger" type="submit" value="Delete">
+                                </form>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </td>
                 </tr>
             {% endfor %}
         </table>
@@ -24,6 +46,7 @@
         </small>    
     {% endif %}
 </body>
+
 {% endblock content %}
 {% block side %}
 <div class="content-section">
@@ -32,16 +55,16 @@
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">Change Ingredients</legend>
             <div class="form-group">
-                {{ add_form.name.label(class="form-control-label") }}
-                {% if add_form.name.errors %}
-                    {{ add_form.name(class="form-control form-control-lg is-invalid") }}
+                {{ add_form.ingr_name.label(class="form-control-label") }}
+                {% if add_form.ingr_name.errors %}
+                    {{ add_form.ingr_name(class="form-control form-control-lg is-invalid") }}
                     <div class="invalid-feedback">
-                        {% for error in add_form.name.errors %}
+                        {% for error in add_form.ingr_name.errors %}
                             <span>{{ error }}</span>
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ add_form.name(class="form-control form-control-lg") }}
+                    {{ add_form.ingr_name(class="form-control form-control-lg") }}
                 {% endif %}
                 {{ add_form.qty.label(class="form-control-label") }}
                 {% if add_form.qty.errors %}
@@ -59,7 +82,6 @@
         <div class="form-group">
             {{ add_form.add(class="btn btn-outline-info") }}
             {{ add_form.remove(class="btn btn-outline-info") }}
-            {{ add_form.delete(class="btn btn-outline-info") }}
         </div>
     </form>
 </div>
