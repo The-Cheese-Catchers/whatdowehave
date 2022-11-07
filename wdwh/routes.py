@@ -1,9 +1,9 @@
 import sqlite3
 from sqlite3 import Error
-from wdwh import app, db, bcrypt, db_functions
+from wdwh import app, db, bcrypt
 from wdwh.forms import *
 from wdwh.models import User, Ingredient
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 
 @app.route("/")
@@ -58,6 +58,8 @@ def enter_recipe():
     recipe_form = EnterRecipeForm()
     if recipe_form.validate_on_submit():
         flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
+        # Add recipe to the database
+        return redirect(url_for("enter_recipe"))
     return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form)
 
 
@@ -74,36 +76,37 @@ def search_recipe():
 @app.route("/my_pantry", methods=["GET", "POST"])
 @login_required
 def my_pantry():
-    """
-        TODO:
-        - Make Ingredients and User class (for OOP)
-        - Make delete button on my pantry page to delete ingredients
-    """
     add_ingr_form = AddIngredientForm()
     if add_ingr_form.validate_on_submit():
         # Capitalize all ingredients
-        ingr_name = add_ingr_form.name.data.capitalize()
+        ingr_name = add_ingr_form.ingr_name.data.capitalize()
         qty = add_ingr_form.qty.data
 
         # Adding to the Pantry
         if add_ingr_form.add.data:
             current_user.addToPantry(ingr_name, qty)
+
         # Removing from the Pantry
         if add_ingr_form.remove.data:
             if not current_user.getIngredientFromPantry(ingr_name):
-                flash("Tried to remove amount from ingredient not in pantry.", "danger")
+                flash(f"Tried to remove amount from an ingredient not present in the pantry.","danger")
             else:
                 if current_user.getIngredientAmount(ingr_name) < qty:
-                    flash("Tried to remove a higher amount than present in the pantry.", "danger")
+                    flash(f"Tried to remove more than is available in the pantry.","danger")
                 else:
                     current_user.removeFromPantry(ingr_name, qty)
-        # Deleting item from the Pantry
-        if add_ingr_form.delete.data:
-            if not current_user.getIngredientFromPantry(ingr_name):
-                flash("Tried to delete an ingredient not in pantry.", "danger")
-            else:
-                current_user.deleteFromPantry(ingr_name)
+        
                 
         return redirect(url_for("my_pantry"))
     all_ingr = Ingredient.query.filter_by(user_id=current_user.id).all()
     return render_template("pantry.html", title="My Pantry", add_form=add_ingr_form, all_ingr=all_ingr)
+
+@app.route("/my_pantry/<int:ingredient_id>/delete", methods=["POST"])
+@login_required
+def delete_ingredient(ingredient_id):
+    ingr = Ingredient.query.get_or_404(ingredient_id)
+    if ingr.user_id != current_user.id:
+        abort(403)
+    current_user.deleteFromPantry(ingr.name)
+    flash(f"{ingr.name} has been deleted!", "success")
+    return redirect(url_for("my_pantry"))
