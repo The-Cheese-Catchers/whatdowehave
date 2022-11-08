@@ -57,6 +57,33 @@ class Recipe(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
+    def __repr__(self):
+        return f"Recipe('{self.name}','{self.instructions}','{self.ingredients}')"
+
+    def getIngredient(self, ingredient):
+        return Ingredient.query.filter_by(name=ingredient,user_id=self.id).first()
+    def modifyRecipe(self, ingredient, qty):
+        ingr = self.getIngredient(ingredient)
+        if ingr:
+            if qty < 0:
+                ingr.decrease(qty)
+            else:
+                ingr.increase(qty)
+        else:
+            new_ingr = Ingredient(name=ingredient, qty=qty, user_id=self.id)
+            db.session.add(new_ingr)
+        db.session.commit()
+
+    def canMake(self, user_id):
+        user = User.query.filter_by(id=user_id).first()
+        for ingredient in user.ingredients:
+            if self.getIngredient(ingredient) is None:
+                return False
+        return True
+
+    def update_instr(self,text):
+        self.instructions = text
+        db.session.commit()
 
 class Ingredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
