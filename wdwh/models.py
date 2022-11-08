@@ -46,8 +46,24 @@ class User(db.Model, UserMixin):
             db.session.commit()
         return True
 
-    # Recipe Functions
-    # def addRecipe(self, name, )
+    def makeRecipe(self, recipe_name):
+        recipe = Recipe.query.filter_by(name=recipe_name,user_id=self.id).first()
+        if not recipe.canMake(self.id):
+            return False
+        ingrs = Ingredient.query.filter_by(recipe_id=recipe.id)
+        for ingredient in ingrs:
+            if ingredient.qty == recipe.getIngredient(ingredient.name).qty:
+                self.deleteFromPantry(ingredient.name)
+            else:
+                self.removeFromPantry(ingredient.name, ingredient.qty)
+        db.session.commit()
+        return True
+
+    def addRecipe(self, name, ingredients, instructions):
+        recipe = Recipe(name=name,ingredients=ingredients,instructions=instructions)
+        db.session.add(recipe)
+        db.session.commit()
+
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,7 +77,7 @@ class Recipe(db.Model):
         return f"Recipe('{self.name}','{self.instructions}','{self.ingredients}')"
 
     def getIngredient(self, ingredient):
-        return Ingredient.query.filter_by(name=ingredient,user_id=self.id).first()
+        return Ingredient.query.filter_by(name=ingredient,recipe_id=self.id).first()
     def modifyRecipe(self, ingredient, qty):
         ingr = self.getIngredient(ingredient)
         if ingr:
@@ -70,15 +86,17 @@ class Recipe(db.Model):
             else:
                 ingr.increase(qty)
         else:
-            new_ingr = Ingredient(name=ingredient, qty=qty, user_id=self.id)
+            new_ingr = Ingredient(name=ingredient, qty=qty, recipe_id=self.id)
             db.session.add(new_ingr)
         db.session.commit()
 
     def canMake(self, user_id):
-        user = User.query.filter_by(id=user_id).first()
-        for ingredient in user.ingredients:
-            if self.getIngredient(ingredient) is None:
+        ingrs = Ingredient.query.filter_by(user_id=user_id)
+        for ingredient in ingrs:
+            if self.getIngredient(ingredient.name) is None\
+                    or self.getIngredient(ingredient.name).qty > ingredient.qty:
                 return False
+
         return True
 
     def update_instr(self,text):
