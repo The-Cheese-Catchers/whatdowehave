@@ -61,7 +61,7 @@ def enter_recipe():
         instructions = recipe_form.instructions.data
         ingredients = recipe_form.ingredients.data
 
-        current_user.addRecipe(recipe_name, None, None)
+        current_user.addRecipe(recipe_name, ingredients, instructions)
 
         flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
         
@@ -77,7 +77,9 @@ def search_recipe():
         recipe_name = search_form.query.data
         # SEARCH API FOR THIS RECIPE AND LIST OUT DETAILS ON SEPARATE PAGE
     all_recipes = Recipe.query.filter_by(user_id=current_user.id).all()
-    return render_template("search_recipe.html", title="Search Recipe", form=search_form, recipes=all_recipes)
+    #all_ingr = Ingredient.query.all()
+    return render_template("search_recipe.html", title="Search Recipe", 
+                form=search_form, recipes=all_recipes, Ingredient=Ingredient)
 
 
 @app.route("/my_pantry", methods=["GET", "POST"])
