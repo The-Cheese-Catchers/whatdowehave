@@ -63,6 +63,18 @@ class User(db.Model, UserMixin):
         recipe = Recipe(name=name, instructions=instructions,user_id=self.id)
         db.session.add(recipe)
         db.session.commit()
+        # ingredients is still in the form (name1, qty1; name2, qty2, ...)
+        ingr_qty = ingredients.split(';')
+        for each_ingr in ingr_qty:
+            i_q = each_ingr.split(',')
+            ingr_name = i_q[0].strip()
+            qty = int(i_q[1].strip())
+            print(f"name: {ingr_name}, qty: {qty}")
+
+            ingr = Ingredient(name=ingr_name,qty=qty,recipe_id=recipe.id)
+            db.session.add(ingr)
+
+        db.session.commit()
 
 
 class Recipe(db.Model):
