@@ -60,7 +60,7 @@ class User(db.Model, UserMixin):
         return True
 
     def addRecipe(self, name, ingredients, instructions):
-        recipe = Recipe(name=name,ingredients=ingredients,instructions=instructions)
+        recipe = Recipe(name=name, instructions=instructions,user_id=self.id)
         db.session.add(recipe)
         db.session.commit()
 

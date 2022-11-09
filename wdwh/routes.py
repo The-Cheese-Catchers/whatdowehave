@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error
 from wdwh import app, db, bcrypt
 from wdwh.forms import *
-from wdwh.models import User, Ingredient
+from wdwh.models import User, Ingredient, Recipe
 from flask import render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -57,8 +57,14 @@ def logout():
 def enter_recipe():
     recipe_form = EnterRecipeForm()
     if recipe_form.validate_on_submit():
+        recipe_name = recipe_form.recipe_name.data
+        instructions = recipe_form.instructions.data
+        ingredients = recipe_form.ingredients.data
+
+        current_user.addRecipe(recipe_name, None, None)
+
         flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
-        # Add recipe to the database
+        
         return redirect(url_for("enter_recipe"))
     return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form)
 
@@ -70,7 +76,8 @@ def search_recipe():
     if search_form.validate_on_submit():
         recipe_name = search_form.query.data
         # SEARCH API FOR THIS RECIPE AND LIST OUT DETAILS ON SEPARATE PAGE
-    return render_template("search_recipe.html", title="Search Recipe", form=search_form)
+    all_recipes = Recipe.query.filter_by(user_id=current_user.id).all()
+    return render_template("search_recipe.html", title="Search Recipe", form=search_form, recipes=all_recipes)
 
 
 @app.route("/my_pantry", methods=["GET", "POST"])
