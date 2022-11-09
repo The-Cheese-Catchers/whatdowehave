@@ -40,7 +40,8 @@ class AddIngredientForm(FlaskForm):
 
 class EnterRecipeForm(FlaskForm):
     recipe_name = StringField("Recipe Name", validators=[DataRequired()])
-    ingredients = TextAreaField("Ingredients: enter name, amount followed by a ; example: Eggs, 4; Milk, 1")
+    ingredients = TextAreaField("Ingredients: enter name, amount followed by a ; example: Eggs, 4; Milk, 1",
+        validators=[DataRequired()])
     # ingredients = FieldList(FormField(AddIngredientForm),min_entries=1)
     
     instructions = TextAreaField(

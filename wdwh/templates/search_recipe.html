@@ -4,6 +4,10 @@
     {% if recipes %}
         {% for recipe in recipes%}
             <h3>{{recipe.name}}</h3>
+            <a href="{{ url_for('update_recipe',recipe_id=recipe.id) }}">
+                <button class="btn btn-sm">Update</button></a>
+            <a href="{{ url_for('delete_recipe',recipe_id=recipe.id) }}">
+                <button class="btn btn-danger btn-sm">Delete</button></a>
             {% if Ingredient.query.filter_by(recipe_id=recipe.id).all()%}
                 <p><i>Ingredients:</i>
                 {% for ingr in Ingredient.query.filter_by(recipe_id=recipe.id).all() %}
@@ -11,7 +15,7 @@
                 {% endfor %}
                 </p>
             {% else %}
-                No ingredients for this recipe were entered.
+                <p><i>No ingredients for this recipe were entered.</i></p>
             {% endif %}
             <p><i>Instructions:</i><br>
             {{recipe.instructions}}</p>
