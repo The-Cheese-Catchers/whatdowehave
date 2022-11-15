@@ -59,9 +59,53 @@ class User(db.Model, UserMixin):
         db.session.commit()
         return True
 
+    def addIngredientsToRecipe(self, recipe, ingredients):
+        # ingredients is still in the form (name1, qty1; name2, qty2, ...)
+        ingr_qty = ingredients.split(';')
+        for each_ingr in ingr_qty:
+            i_q = each_ingr.split(',')
+            if len(i_q) != 2:
+                # Improper entry, abort this recipe
+                return False
+            ingr_name = i_q[0].strip()
+            qty = int(i_q[1].strip())
+
+            ingr = Ingredient(name=ingr_name,qty=qty,recipe_id=recipe.id)
+            db.session.add(ingr)
+        return True
+
+    def removeIngredientsFromRecipe(self, recipe):
+        present_ingrs = Ingredient.query.filter_by(recipe_id=recipe.id).all()
+        for present_ingr in present_ingrs:
+            db.session.delete(present_ingr)
+        db.session.commit()
+
     def addRecipe(self, name, ingredients, instructions):
-        recipe = Recipe(name=name,ingredients=ingredients,instructions=instructions)
+        recipe = Recipe(name=name, instructions=instructions,user_id=self.id)
         db.session.add(recipe)
+        db.session.commit()
+        
+        if self.addIngredientsToRecipe(recipe, ingredients):
+            db.session.commit()
+            return True
+        return False
+    def modifyRecipe(self, recipe, name, ingredients, instructions):
+        # Update info
+        recipe.name = name
+        recipe.instructions = instructions
+
+        # Update ingredients
+        self.removeIngredientsFromRecipe(recipe)
+        
+        # Add new ingredients
+        if self.addIngredientsToRecipe(recipe, ingredients):
+            db.session.commit()
+            return True
+        return False
+
+    def deleteRecipe(self, recipe):
+        self.removeIngredientsFromRecipe(recipe)
+        db.session.delete(recipe)
         db.session.commit()
 
 

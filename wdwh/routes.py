@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error
 from wdwh import app, db, bcrypt
 from wdwh.forms import *
-from wdwh.models import User, Ingredient
+from wdwh.models import User, Ingredient, Recipe
 from flask import render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -57,10 +57,19 @@ def logout():
 def enter_recipe():
     recipe_form = EnterRecipeForm()
     if recipe_form.validate_on_submit():
-        flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
-        # Add recipe to the database
-        return redirect(url_for("enter_recipe"))
-    return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form)
+        recipe_name = recipe_form.recipe_name.data
+        instructions = recipe_form.instructions.data
+        ingredients = recipe_form.ingredients.data
+
+        if current_user.addRecipe(recipe_name, ingredients, instructions):
+            flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
+            return redirect(url_for("search_recipe"))
+        else:
+            flash("Ingredients formatted incorrectly, try again","danger")
+            recipe = Recipe.query.filter_by(name=recipe_name,user_id=current_user.id).first()
+            return redirect(url_for("update_recipe",recipe_id=recipe.id))
+    return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form,
+    legend="Enter Recipe Information")
 
 
 @app.route("/search_recipe", methods=["GET", "POST"])
@@ -70,7 +79,10 @@ def search_recipe():
     if search_form.validate_on_submit():
         recipe_name = search_form.query.data
         # SEARCH API FOR THIS RECIPE AND LIST OUT DETAILS ON SEPARATE PAGE
-    return render_template("search_recipe.html", title="Search Recipe", form=search_form)
+    all_recipes = Recipe.query.filter_by(user_id=current_user.id).all()
+    #all_ingr = Ingredient.query.all()
+    return render_template("search_recipe.html", title="Search Recipe", 
+                form=search_form, recipes=all_recipes, Ingredient=Ingredient)
 
 
 @app.route("/my_pantry", methods=["GET", "POST"])
@@ -110,3 +122,40 @@ def delete_ingredient(ingredient_id):
     current_user.deleteFromPantry(ingr.name)
     flash(f"{ingr.name} has been deleted!", "success")
     return redirect(url_for("my_pantry"))
+
+@app.route("/search_recipe/<int:recipe_id>/update", methods=["GET","POST"])
+@login_required
+def update_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    if recipe.user_id != current_user.id:
+        abort(403)
+
+    recipe_form = EnterRecipeForm()
+    if recipe_form.validate_on_submit():
+        recipe_name = recipe_form.recipe_name.data
+        instructions = recipe_form.instructions.data
+        ingredients = recipe_form.ingredients.data
+
+        if current_user.modifyRecipe(recipe, recipe_name, ingredients, instructions):
+            flash(f"Recipe updated! You should now be able to search for the recipe in the search bar.","success")
+            return redirect(url_for("search_recipe"))
+        else:
+            flash("Ingredients formatted incorrectly, try again","danger")
+            return redirect(url_for("update_recipe",recipe_id=recipe.id))
+    elif request.method == "GET":
+        recipe_form.recipe_name.data = recipe.name
+        recipe_form.instructions.data = recipe.instructions
+    return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form,
+    legend="Update Recipe Information")
+
+@app.route("/search_recipe/<int:recipe_id>/delete", methods=["GET","POST"])
+@login_required
+def delete_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    recipe_name = recipe.name
+    if recipe.user_id != current_user.id:
+        abort(403)
+    current_user.deleteRecipe(recipe)
+    flash(f"Recipe [{recipe_name}] deleted!", "success")
+    return redirect(url_for("search_recipe"))
+
