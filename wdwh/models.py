@@ -14,6 +14,10 @@ class User(db.Model, UserMixin):
     ingredients = db.relationship('Ingredient', backref='owner', lazy=True)
     recipes = db.relationship('Recipe', backref='owner', lazy=True)
 
+    def __init__(self,username,email):
+        self.username = username
+        self.email = email
+
     def __repr__(self):
         return f"User('{self.username}')"
 

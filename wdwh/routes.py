@@ -3,7 +3,7 @@ from sqlite3 import Error
 from wdwh import app, db, bcrypt
 from wdwh.forms import *
 from wdwh.models import User, Ingredient, Recipe
-from flask import render_template, flash, redirect, url_for, request, abort
+from flask import render_template, flash, redirect, url_for, request, abort,request,make_response
 from flask_login import login_user, current_user, logout_user, login_required
 
 @app.route("/")
@@ -12,6 +12,24 @@ def home():
     # if current_user.is_authenticated:
     #     return redirect(url_for("my_pantry"))
     return render_template("home.html", title="Home")
+
+@app.route('/view')
+def view():
+    # fetches all the users
+    users = User.query.all()
+    # response list consisting user details
+    response = list()
+ 
+    for user in users:
+        response.append({
+            "id" : user.id,
+            "name" : user.username
+        })
+ 
+    return make_response({
+        'status' : 'success',
+        'message': response
+    }, 200)
 
 @app.route("/register", methods=["GET","POST"])
 def register():
