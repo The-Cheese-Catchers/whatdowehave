@@ -20,6 +20,86 @@
                         {{ingr.exp_date.date()}}
                         {% endif %}
                     </td>
+                    <td>{% if ingr.exp_date %}
+                        <!--Update-->
+                        <button type="button" class="btn btn-info btn-sm btn-block" data-toggle="modal" data-target="#updateModal{{ingr.id}}">Update</button>
+                        <div class="modal fade" id="updateModal{{ingr.id}}" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="addModalLabel">Update Expiration for {{ ingr.name }}?</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="POST" action="">
+                                            {{ add_form.hidden_tag() }}
+                                            <fieldset class="form-group">
+                                                <div class="form-group">
+                                                    {{ add_form.date.label(class="form-control-label") }}
+                                                    {% if add_form.date.errors %}
+                                                        {{ add_form.date(class="form-control form-control-lg is-invalid") }}
+                                                        <div class="invalid-feedback">
+                                                            {% for error in add_form.date.errors %}
+                                                                <span>{{ error }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% else %}
+                                                        {{ add_form.date(class="form-control form-control-lg") }}
+                                                    {% endif %}
+                                                </div>
+                                            </fieldset> 
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!--Add-->
+                        <button type="button" class="btn btn-success btn-sm btn-block" data-toggle="modal" data-target="#addModal{{ingr.id}}">Add</button>
+                        <div class="modal fade" id="addModal{{ingr.id}}" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="addModalLabel">Add Expiration for {{ ingr.name }}?</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="POST" action="">
+                                            {{ add_form.hidden_tag() }}
+                                            <fieldset class="form-group">
+                                                <div class="form-group">
+                                                    {{ add_form.date.label(class="form-control-label") }}
+                                                    {% if add_form.date.errors %}
+                                                        {{ add_form.date(class="form-control form-control-lg is-invalid") }}
+                                                        <div class="invalid-feedback">
+                                                            {% for error in add_form.date.errors %}
+                                                                <span>{{ error }}</span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% else %}
+                                                        {{ add_form.date(class="form-control form-control-lg") }}
+                                                    {% endif %}
+                                                </div>
+                                            </fieldset> 
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </td>
                     <td>
                         <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal{{ingr.id}}">Delete</button>
                         <!-- Modal -->
