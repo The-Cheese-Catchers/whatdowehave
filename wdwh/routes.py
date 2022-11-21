@@ -98,7 +98,6 @@ def search_recipe():
         recipe_name = search_form.query.data
         # SEARCH API FOR THIS RECIPE AND LIST OUT DETAILS ON SEPARATE PAGE
     all_recipes = Recipe.query.filter_by(user_id=current_user.id).all()
-    #all_ingr = Ingredient.query.all()
     return render_template("search_recipe.html", title="Search Recipe", 
                 form=search_form, recipes=all_recipes, RecipeIngredient=RecipeIngredient)
 
@@ -176,5 +175,15 @@ def delete_recipe(recipe_id):
         abort(403)
     current_user.deleteRecipe(recipe)
     flash(f"Recipe [{recipe_name}] deleted!", "success")
+    return redirect(url_for("search_recipe"))
+
+@app.route("/search_recipe/<int:recipe_id>/make", methods=["GET","POST"])
+@login_required
+def make_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    if recipe.user_id != current_user.id or recipe.canMake() == 0:
+        abort(403)
+    recipe.make()
+    flash(f"Recipe [{recipe.name}] made!", "success")
     return redirect(url_for("search_recipe"))
 

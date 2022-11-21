@@ -47,18 +47,6 @@ class User(db.Model, UserMixin):
             db.session.commit()
         return True
 
-    def makeRecipe(self, recipe_name):
-        recipe = Recipe.query.filter_by(name=recipe_name,user_id=self.id).first()
-        if not recipe.canMake(self.id):
-            return False
-        ingrs = Ingredient.query.filter_by(recipe_id=recipe.id)
-        for ingredient in ingrs:
-            if ingredient.qty == recipe.getIngredient(ingredient.name).qty:
-                self.deleteFromPantry(ingredient.name)
-            else:
-                self.removeFromPantry(ingredient.name, ingredient.qty)
-        db.session.commit()
-        return True
 
     def addIngredientsToRecipe(self, recipe, ingredients):
         # ingredients is still in the form (name1, qty1; name2, qty2, ...)
@@ -109,6 +97,39 @@ class User(db.Model, UserMixin):
         db.session.delete(recipe)
         db.session.commit()
 
+    # Says how many times a recipe can be made
+    def canMakeRecipe(self, recipe):
+        recipe_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
+        maxMakes = 1e9
+        for recipe_ingr in recipe_ingrs:
+            pantry_ingr = self.getIngredientFromPantry(recipe_ingr.name)
+            if not pantry_ingr:
+                return 0
+            if pantry_ingr.qty < recipe_ingr.qty:
+                return 0
+            else:
+                maxMakes = min(maxMakes, pantry_ingr.qty//recipe_ingr.qty)
+        return maxMakes
+    
+    # Makes recipe using pantry
+    def makeRecipe(self, recipe):
+        recipe_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
+        for recipe_ingr in recipe_ingrs:
+            pantry_ingr = self.getIngredientFromPantry(recipe_ingr.name)
+            pantry_ingr.decrease(recipe_ingr.qty)
+    
+    # Sees which ingredients are missing to make a recipe
+    def missingIngredients(self, recipe):
+        missing_ingrs = []
+        recipe_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
+        for recipe_ingr in recipe_ingrs:
+            pantry_ingr = self.getIngredientFromPantry(recipe_ingr.name)
+            if not pantry_ingr:
+                missing_ingrs.append((recipe_ingr.name, recipe_ingr.qty))
+            elif pantry_ingr.qty < recipe_ingr.qty:
+                missing_ingrs.append((recipe_ingr.name, recipe_ingr.qty - pantry_ingr.qty))
+        return missing_ingrs
+
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -136,14 +157,12 @@ class Recipe(db.Model):
             db.session.add(new_ingr)
         db.session.commit()
 
-    def canMake(self, user_id):
-        ingrs = Ingredient.query.filter_by(user_id=user_id)
-        for ingredient in ingrs:
-            if self.getIngredient(ingredient.name) is None\
-                    or self.getIngredient(ingredient.name).qty > ingredient.qty:
-                return False
-
-        return True
+    def canMake(self):
+        return self.owner.canMakeRecipe(self)
+    def make(self):
+        self.owner.makeRecipe(self)
+    def missingIngredients(self):
+        return self.owner.missingIngredients(self)
 
     def update_instr(self,text):
         self.instructions = text
