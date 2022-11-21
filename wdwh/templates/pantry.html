@@ -10,11 +10,16 @@
             <tr>
                 <th>Ingredient Name</th>
                 <th>Amount</th>
+                <th>Expiration Date</th>
             </tr>
             {% for ingr in all_ingr %}
                 <tr>
                     <td>{{ingr.name}}</td>
                     <td>{{ingr.qty}}</td>
+                    <td>{% if ingr.exp_date %}
+                        {{ingr.exp_date.date()}}
+                        {% endif %}
+                    </td>
                     <td>
                         <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal{{ingr.id}}">Delete</button>
                         <!-- Modal -->
@@ -76,6 +81,17 @@
                     </div>
                 {% else %}
                     {{ add_form.qty(class="form-control form-control-lg") }}
+                {% endif %}
+                {{ add_form.date.label(class="form-control-label") }}
+                {% if add_form.date.errors %}
+                    {{ add_form.date(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in add_form.date.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ add_form.date(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
         </fieldset>
