@@ -24,6 +24,7 @@ CREATE TABLE tbl_recipes (
                 name VARCHAR(255) NOT NULL, 
                 quantity INTEGER NOT NULL, 
                 ingredient_id INTEGER NOT NULL REFERENCES tbl_ingregients(id),
+                image VARBINARY(MAX),
                 PRIMARY KEY (id, ingredient_id)
             );
 INSERT INTO tbl_recipes (id, name, quantity, ingredient_id) VALUES (1, 'spanish omelette', 1, 1);

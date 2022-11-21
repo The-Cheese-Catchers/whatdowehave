@@ -40,6 +40,8 @@
                 {% endfor %}
             </p>
             {% endif %}
+            <p><i>Image:</i><br>
+                <img src="data:image/jpeg;base64,".base64_encode(recipe.image) alt="Recipe" width="200" height="100"/></p>
         </div>
         {% endfor %}
 

@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from sqlite3 import Error
 from wdwh import app, db, bcrypt
@@ -5,6 +6,7 @@ from wdwh.forms import *
 from wdwh.models import User, PantryIngredient, RecipeIngredient, Recipe
 from flask import render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
+from werkzeug.utils import secure_filename
 
 @app.route("/")
 @app.route("/home")
@@ -60,8 +62,11 @@ def enter_recipe():
         recipe_name = recipe_form.recipe_name.data
         instructions = recipe_form.instructions.data
         ingredients = recipe_form.ingredients.data
-
-        if current_user.addRecipe(recipe_name, ingredients, instructions):
+        image = recipe_form.image.data
+        filename = secure_filename(image.filename)
+        image.save('wdwh/images/'+filename)
+        image = image.read()
+        if current_user.addRecipe(recipe_name, ingredients, instructions, image):
             flash(f"Recipe created! You should now be able to search for the recipe in the search bar.","success")
             return redirect(url_for("search_recipe"))
         else:
@@ -135,8 +140,9 @@ def update_recipe(recipe_id):
         recipe_name = recipe_form.recipe_name.data
         instructions = recipe_form.instructions.data
         ingredients = recipe_form.ingredients.data
-
-        if current_user.modifyRecipe(recipe, recipe_name, ingredients, instructions):
+        image = recipe_form.image.data
+        image = image.read()
+        if current_user.modifyRecipe(recipe, recipe_name, ingredients, instructions, image):
             flash(f"Recipe updated! You should now be able to search for the recipe in the search bar.","success")
             return redirect(url_for("search_recipe"))
         else:
@@ -145,6 +151,7 @@ def update_recipe(recipe_id):
     elif request.method == "GET":
         recipe_form.recipe_name.data = recipe.name
         recipe_form.instructions.data = recipe.instructions
+        recipe_form.image.data = recipe.image
     return render_template("enter_recipe.html", title="Create a Recipe", form=recipe_form,
     legend="Update Recipe Information")
 

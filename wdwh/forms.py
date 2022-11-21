@@ -49,13 +49,12 @@ class EnterRecipeForm(FlaskForm):
         "Write some instructions on how to make this recipe",
         validators=[DataRequired()],
     )
-    picture = FileField(
+    image = FileField(
         "Upload a picture of the finished product",
         validators=[FileAllowed(["jpg", "png"])],
     )
     make_public = BooleanField("Make Recipe Public")
     submit = SubmitField("Submit")
-    
 
 
 class SearchRecipeForm(FlaskForm):

@@ -69,8 +69,8 @@ class User(db.Model, UserMixin):
             db.session.delete(present_ingr)
         db.session.commit()
 
-    def addRecipe(self, name, ingredients, instructions):
-        recipe = Recipe(name=name, instructions=instructions,user_id=self.id)
+    def addRecipe(self, name, ingredients, instructions, image):
+        recipe = Recipe(name=name, instructions=instructions,user_id=self.id,image=image)
         db.session.add(recipe)
         db.session.commit()
         
@@ -78,11 +78,11 @@ class User(db.Model, UserMixin):
             db.session.commit()
             return True
         return False
-    def modifyRecipe(self, recipe, name, ingredients, instructions):
+    def modifyRecipe(self, recipe, name, ingredients, instructions, image):
         # Update info
         recipe.name = name
         recipe.instructions = instructions
-
+        recipe.image = image
         # Update ingredients
         self.removeIngredientsFromRecipe(recipe)
         
@@ -135,12 +135,13 @@ class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     instructions = db.Column(db.Text)
+    image = db.Column(db.LargeBinary, nullable=True)
     ingredients = db.relationship('RecipeIngredient', backref='recipe', lazy=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return f"Recipe('{self.name}','{self.instructions}','{self.ingredients}')"
+        return f"Recipe('{self.name}','{self.instructions}','{self.ingredients}','{self.image}')"
 
     def getIngredient(self, ingredient):
         return RecipeIngredient.query.filter_by(name=ingredient,recipe_id=self.id).first()
