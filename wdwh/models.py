@@ -11,7 +11,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
-    ingredients = db.relationship('Ingredient', backref='owner', lazy=True)
+    ingredients = db.relationship('PantryIngredient', backref='owner', lazy=True)
     recipes = db.relationship('Recipe', backref='owner', lazy=True)
 
     def __repr__(self):
@@ -19,14 +19,15 @@ class User(db.Model, UserMixin):
 
     # Pantry Functions
     def getIngredientFromPantry(self, ingr_name):
-        return Ingredient.query.filter_by(name=ingr_name,user_id=self.id).first()
+        return PantryIngredient.query.filter_by(name=ingr_name,user_id=self.id).first()
 
-    def addToPantry(self, ingr_name, qty):
+    def addToPantry(self, ingr_name, qty, date):
         present_ingr = self.getIngredientFromPantry(ingr_name)
         if present_ingr:
             present_ingr.increase(qty)
+            present_ingr.setExpDate(date)
         else:
-            ingr = Ingredient(name=ingr_name,qty=qty,user_id=self.id)
+            ingr = PantryIngredient(name=ingr_name,qty=qty,user_id=self.id,exp_date=date)
             db.session.add(ingr)
         db.session.commit()
         return True
@@ -46,18 +47,6 @@ class User(db.Model, UserMixin):
             db.session.commit()
         return True
 
-    def makeRecipe(self, recipe_name):
-        recipe = Recipe.query.filter_by(name=recipe_name,user_id=self.id).first()
-        if not recipe.canMake(self.id):
-            return False
-        ingrs = Ingredient.query.filter_by(recipe_id=recipe.id)
-        for ingredient in ingrs:
-            if ingredient.qty == recipe.getIngredient(ingredient.name).qty:
-                self.deleteFromPantry(ingredient.name)
-            else:
-                self.removeFromPantry(ingredient.name, ingredient.qty)
-        db.session.commit()
-        return True
 
     def addIngredientsToRecipe(self, recipe, ingredients):
         # ingredients is still in the form (name1, qty1; name2, qty2, ...)
@@ -70,12 +59,12 @@ class User(db.Model, UserMixin):
             ingr_name = i_q[0].strip()
             qty = int(i_q[1].strip())
 
-            ingr = Ingredient(name=ingr_name,qty=qty,recipe_id=recipe.id)
+            ingr = RecipeIngredient(name=ingr_name,qty=qty,recipe_id=recipe.id)
             db.session.add(ingr)
         return True
 
     def removeIngredientsFromRecipe(self, recipe):
-        present_ingrs = Ingredient.query.filter_by(recipe_id=recipe.id).all()
+        present_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
         for present_ingr in present_ingrs:
             db.session.delete(present_ingr)
         db.session.commit()
@@ -108,20 +97,54 @@ class User(db.Model, UserMixin):
         db.session.delete(recipe)
         db.session.commit()
 
+    # Says how many times a recipe can be made
+    def canMakeRecipe(self, recipe):
+        recipe_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
+        maxMakes = 1e9
+        for recipe_ingr in recipe_ingrs:
+            pantry_ingr = self.getIngredientFromPantry(recipe_ingr.name)
+            if not pantry_ingr:
+                return 0
+            if pantry_ingr.qty < recipe_ingr.qty:
+                return 0
+            else:
+                maxMakes = min(maxMakes, pantry_ingr.qty//recipe_ingr.qty)
+        return maxMakes
+    
+    # Makes recipe using pantry
+    def makeRecipe(self, recipe):
+        recipe_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
+        for recipe_ingr in recipe_ingrs:
+            pantry_ingr = self.getIngredientFromPantry(recipe_ingr.name)
+            pantry_ingr.decrease(recipe_ingr.qty)
+    
+    # Sees which ingredients are missing to make a recipe
+    def missingIngredients(self, recipe):
+        missing_ingrs = []
+        recipe_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
+        for recipe_ingr in recipe_ingrs:
+            pantry_ingr = self.getIngredientFromPantry(recipe_ingr.name)
+            if not pantry_ingr:
+                missing_ingrs.append((recipe_ingr.name, recipe_ingr.qty))
+            elif pantry_ingr.qty < recipe_ingr.qty:
+                missing_ingrs.append((recipe_ingr.name, recipe_ingr.qty - pantry_ingr.qty))
+        return missing_ingrs
+
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     instructions = db.Column(db.Text)
-    ingredients = db.relationship('Ingredient', backref='recipe', lazy=True)
     image = db.Column(db.LargeBinary, nullable=True)
+    ingredients = db.relationship('RecipeIngredient', backref='recipe', lazy=True)
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
         return f"Recipe('{self.name}','{self.instructions}','{self.ingredients}','{self.image}')"
 
     def getIngredient(self, ingredient):
-        return Ingredient.query.filter_by(name=ingredient,recipe_id=self.id).first()
+        return RecipeIngredient.query.filter_by(name=ingredient,recipe_id=self.id).first()
     def modifyRecipe(self, ingredient, qty):
         ingr = self.getIngredient(ingredient)
         if ingr:
@@ -130,18 +153,16 @@ class Recipe(db.Model):
             else:
                 ingr.increase(qty)
         else:
-            new_ingr = Ingredient(name=ingredient, qty=qty, recipe_id=self.id)
+            new_ingr = RecipeIngredient(name=ingredient, qty=qty, recipe_id=self.id)
             db.session.add(new_ingr)
         db.session.commit()
 
-    def canMake(self, user_id):
-        ingrs = Ingredient.query.filter_by(user_id=user_id)
-        for ingredient in ingrs:
-            if self.getIngredient(ingredient.name) is None\
-                    or self.getIngredient(ingredient.name).qty > ingredient.qty:
-                return False
-
-        return True
+    def canMake(self):
+        return self.owner.canMakeRecipe(self)
+    def make(self):
+        self.owner.makeRecipe(self)
+    def missingIngredients(self):
+        return self.owner.missingIngredients(self)
 
     def update_instr(self,text):
         self.instructions = text
@@ -151,14 +172,14 @@ class Ingredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     qty = db.Column(db.Integer, nullable=False)
-    exp_date = db.Column(db.DateTime)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'))
 
     def __repr__(self):
         return f"Ingredient('{self.name}', '{self.qty}')"
 
+# Extends Ingredient
+class PantryIngredient(Ingredient):
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    exp_date = db.Column(db.DateTime)
     def increase(self, qty):
         self.qty += qty
         db.session.commit()
@@ -166,3 +187,9 @@ class Ingredient(db.Model):
     def decrease(self, qty):
         self.qty -= qty
         db.session.commit()
+    def setExpDate(self, date):
+        self.exp_date = date    
+
+# Extends Ingredient
+class RecipeIngredient(Ingredient):
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'))
