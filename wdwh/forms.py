@@ -54,7 +54,6 @@ class EnterRecipeForm(FlaskForm):
     )
     make_public = BooleanField("Make Recipe Public")
     submit = SubmitField("Submit")
-    
 
 
 class SearchRecipeForm(FlaskForm):

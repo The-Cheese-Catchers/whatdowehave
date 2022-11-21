@@ -20,7 +20,7 @@
             <p><i>Instructions:</i><br>
             {{recipe.instructions}}</p>
             <p><i>Image:</i><br>
-            {{recipe.image}}</p>
+            <img src="data:image/jpeg;base64,".base64_encode(recipe.image)></p>
         {% endfor %}
     {% else %}
         You currently have no recipes added. Try adding some!
