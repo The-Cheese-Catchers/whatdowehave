@@ -160,7 +160,8 @@ class Ingredient(db.Model):
 # Extends Ingredient
 class PantryIngredient(Ingredient):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    exp_date = db.Column(db.DateTime)
+    exp_date = db.Column(db.Date)
+
     def increase(self, qty):
         self.qty += qty
         db.session.commit()
@@ -168,6 +169,7 @@ class PantryIngredient(Ingredient):
     def decrease(self, qty):
         self.qty -= qty
         db.session.commit()
+
     def setExpDate(self, date):
         self.exp_date = date    
 
