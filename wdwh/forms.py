@@ -5,6 +5,9 @@ from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
 from wdwh.models import User, Ingredient
 
 
+# Registration data form
+# - Defines the datatypes and variables for each input box the user interacts with when registering
+# - Has a method to validate whether the inputted username is taken or not (username must be unique)
 class RegistrationForm(FlaskForm):
     username = StringField(
         "Username", validators=[DataRequired(), Length(min=2, max=20)]
@@ -21,6 +24,8 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('That username is taken. Please choose a different one.')
 
 
+# Login data form
+# - Defines the datatypes and variables for each input box the user interacts with when logging in
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
@@ -28,6 +33,9 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login")
 
 
+# Adding ingredient data form
+# - Defines the datatypes and variables for each input box the user interacts with when adding an ingredient
+# - Has a method to validate whether user enters impossible amount (0 or negative ingredients)
 class AddIngredientForm(FlaskForm):
     ingr_name = StringField("Ingredient Name", validators=[DataRequired()])
     qty = IntegerField("Amount", validators=[DataRequired()])
@@ -38,6 +46,9 @@ class AddIngredientForm(FlaskForm):
         if qty.data < 1:
             raise ValidationError('Improper amount.')
 
+
+# Custom recipe data form
+# - Defines the datatypes and variables for each input box the user interacts with when entering a recipe
 class EnterRecipeForm(FlaskForm):
     recipe_name = StringField("Recipe Name", validators=[DataRequired()])
     ingredients = TextAreaField("Ingredients: enter name, amount followed by a ; example: Eggs, 4; Milk, 1",
@@ -56,7 +67,8 @@ class EnterRecipeForm(FlaskForm):
     submit = SubmitField("Submit")
     
 
-
+# Searching a recipe form
+# - Defines the datatypes and variables for each input box the user interacts with when searching for a recipe
 class SearchRecipeForm(FlaskForm):
     query = StringField("Search for Recipe", validators=[DataRequired()])
     submit = SubmitField("Search")
