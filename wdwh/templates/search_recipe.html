@@ -8,9 +8,9 @@
                 <button class="btn btn-sm">Update</button></a>
             <a href="{{ url_for('delete_recipe',recipe_id=recipe.id) }}">
                 <button class="btn btn-danger btn-sm">Delete</button></a>
-            {% if Ingredient.query.filter_by(recipe_id=recipe.id).all()%}
+            {% if RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()%}
                 <p><i>Ingredients:</i>
-                {% for ingr in Ingredient.query.filter_by(recipe_id=recipe.id).all() %}
+                {% for ingr in RecipeIngredient.query.filter_by(recipe_id=recipe.id).all() %}
                 <br>{{ingr.name}} : {{ingr.qty}}
                 {% endfor %}
                 </p>
