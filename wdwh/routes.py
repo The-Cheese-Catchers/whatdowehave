@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Error
 from wdwh import app, db, bcrypt
 from wdwh.forms import *
-from wdwh.models import User, Ingredient, Recipe
+from wdwh.models import User, PantryIngredient, RecipeIngredient, Recipe
 from flask import render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -12,8 +12,6 @@ from flask_login import login_user, current_user, logout_user, login_required
 @app.route("/")
 @app.route("/home")
 def home():
-    # if current_user.is_authenticated:
-    #     return redirect(url_for("my_pantry"))
     return render_template("home.html", title="Home")
 
 
@@ -100,9 +98,8 @@ def search_recipe():
         recipe_name = search_form.query.data
         # SEARCH API FOR THIS RECIPE AND LIST OUT DETAILS ON SEPARATE PAGE
     all_recipes = Recipe.query.filter_by(user_id=current_user.id).all()
-    #all_ingr = Ingredient.query.all()
     return render_template("search_recipe.html", title="Search Recipe", 
-                form=search_form, recipes=all_recipes, Ingredient=Ingredient)
+                form=search_form, recipes=all_recipes, RecipeIngredient=RecipeIngredient)
 
 
 # Defines the pantry page
@@ -116,10 +113,11 @@ def my_pantry():
         # Capitalize all ingredients
         ingr_name = add_ingr_form.ingr_name.data.capitalize()
         qty = add_ingr_form.qty.data
+        date = add_ingr_form.date.data
 
         # Adding to the Pantry
         if add_ingr_form.add.data:
-            current_user.addToPantry(ingr_name, qty)
+            current_user.addToPantry(ingr_name, qty, date)
 
         # Removing from the Pantry
         if add_ingr_form.remove.data:
@@ -133,7 +131,7 @@ def my_pantry():
         
                 
         return redirect(url_for("my_pantry"))
-    all_ingr = Ingredient.query.filter_by(user_id=current_user.id).all()
+    all_ingr = PantryIngredient.query.filter_by(user_id=current_user.id).all()
     return render_template("pantry.html", title="My Pantry", add_form=add_ingr_form, all_ingr=all_ingr)
 
 
@@ -142,7 +140,7 @@ def my_pantry():
 @app.route("/my_pantry/<int:ingredient_id>/delete", methods=["POST"])
 @login_required
 def delete_ingredient(ingredient_id):
-    ingr = Ingredient.query.get_or_404(ingredient_id)
+    ingr = PantryIngredient.query.get_or_404(ingredient_id)
     if ingr.user_id != current_user.id:
         abort(403)
     current_user.deleteFromPantry(ingr.name)
@@ -189,5 +187,15 @@ def delete_recipe(recipe_id):
         abort(403)
     current_user.deleteRecipe(recipe)
     flash(f"Recipe [{recipe_name}] deleted!", "success")
+    return redirect(url_for("search_recipe"))
+
+@app.route("/search_recipe/<int:recipe_id>/make", methods=["GET","POST"])
+@login_required
+def make_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    if recipe.user_id != current_user.id or recipe.canMake() == 0:
+        abort(403)
+    recipe.make()
+    flash(f"Recipe [{recipe.name}] made!", "success")
     return redirect(url_for("search_recipe"))
 

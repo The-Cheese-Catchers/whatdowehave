@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, IntegerField
-from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
-from wdwh.models import User, Ingredient
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, IntegerField, DateField
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Optional
+from wdwh.models import User, Ingredient, PantryIngredient, RecipeIngredient
 
 
 # Registration data form
@@ -39,6 +39,7 @@ class LoginForm(FlaskForm):
 class AddIngredientForm(FlaskForm):
     ingr_name = StringField("Ingredient Name", validators=[DataRequired()])
     qty = IntegerField("Amount", validators=[DataRequired()])
+    date = DateField("Expiration Date", validators=[Optional()])
     add = SubmitField("Add")
     remove = SubmitField("Remove")
 
