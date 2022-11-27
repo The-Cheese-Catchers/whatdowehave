@@ -193,7 +193,7 @@ class Recipe(db.Model):
     def missingIngredients(self):
         return self.owner.missingIngredients(self)
     # Updates the Recipe instructions
-    def update_instr(self,text):
+    def updateInstr(self,text):
         self.instructions = text
         db.session.commit()
 
