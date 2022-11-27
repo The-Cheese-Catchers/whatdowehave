@@ -38,10 +38,12 @@ class LoginForm(FlaskForm):
 # - Has a method to validate whether user enters impossible amount (0 or negative ingredients)
 class AddIngredientForm(FlaskForm):
     ingr_name = StringField("Ingredient Name", validators=[DataRequired()])
-    qty = IntegerField("Amount", validators=[DataRequired()])
+    qty = IntegerField("Amount", validators=[Optional()])
     date = DateField("Expiration Date", validators=[Optional()])
+    units = StringField("Unit", validators=[Optional()])
     add = SubmitField("Add")
     remove = SubmitField("Remove")
+    set = SubmitField("Set")
 
     def validate_qty(self, qty):
         if qty.data < 1:

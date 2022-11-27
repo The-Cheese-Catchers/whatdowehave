@@ -20,14 +20,27 @@ class User(db.Model, UserMixin):
     def getIngredientFromPantry(self, ingr_name):
         return PantryIngredient.query.filter_by(name=ingr_name,user_id=self.id).first()
 
+    # Sets a PantryIngredient
+    def setPantryIngredient(self, ingr_name, qty, date, units):
+        present_ingr = self.getIngredientFromPantry(ingr_name)
+        if present_ingr:
+            present_ingr.setQty(qty)
+            present_ingr.setExpDate(date)
+            present_ingr.setUnits(units)
+        else:
+            ingr = PantryIngredient(name=ingr_name,qty=qty,units=units,user_id=self.id,exp_date=date)
+            db.session.add(ingr)
+        db.session.commit()
+
     # Adds PantryIngredient to the User
-    def addToPantry(self, ingr_name, qty, date):
+    def addToPantry(self, ingr_name, qty, date, units):
         present_ingr = self.getIngredientFromPantry(ingr_name)
         if present_ingr:
             present_ingr.increase(qty)
             present_ingr.setExpDate(date)
+            present_ingr.setUnits(units)
         else:
-            ingr = PantryIngredient(name=ingr_name,qty=qty,user_id=self.id,exp_date=date)
+            ingr = PantryIngredient(name=ingr_name,qty=qty,units=units,user_id=self.id,exp_date=date)
             db.session.add(ingr)
         db.session.commit()
         return True
@@ -38,9 +51,11 @@ class User(db.Model, UserMixin):
         return present_ingr.qty
 
     # Removes a set amount from the ingredient in the pantry
-    def removeFromPantry(self, ingr_name, qty):
+    def removeFromPantry(self, ingr_name, qty, units):
         present_ingr = self.getIngredientFromPantry(ingr_name)
         present_ingr.decrease(qty)
+        present_ingr.setUnits(units)
+        db.session.commit()
         return True
     # Delete an Ingredient completely from a User
     def deleteFromPantry(self, ingr_name):
@@ -187,9 +202,17 @@ class Ingredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     qty = db.Column(db.Integer, nullable=False)
+    units = db.Column(db.String(100))
 
     def __repr__(self):
         return f"Ingredient('{self.name}', '{self.qty}')"
+    
+    def setQty(self, new_qty):
+        if new_qty:
+            self.qty = new_qty
+    def setUnits(self, new_units):
+        if new_units:
+            self.units = new_units
 
 # Extends Ingredient
 # - Links Ingredients to Users
@@ -199,13 +222,11 @@ class PantryIngredient(Ingredient):
     exp_date = db.Column(db.DateTime)
 
     # Increases the quantity
-    def increase(self, qty):
+    def increase(self, qty=1):
         self.qty += qty
-        db.session.commit()
     # Decreases the quantity
-    def decrease(self, qty):
+    def decrease(self, qty=1):
         self.qty -= qty
-        db.session.commit()
     # Updates the expiration date
     def setExpDate(self, date):
         self.exp_date = date    

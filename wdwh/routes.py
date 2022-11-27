@@ -114,20 +114,30 @@ def my_pantry():
         ingr_name = add_ingr_form.ingr_name.data.capitalize()
         qty = add_ingr_form.qty.data
         date = add_ingr_form.date.data
+        units = add_ingr_form.units.data.capitalize()
 
         # Adding to the Pantry
         if add_ingr_form.add.data:
-            current_user.addToPantry(ingr_name, qty, date)
+            if not qty:
+                flash("Can't add without an amount","danger")
+            else:
+                current_user.addToPantry(ingr_name, qty, date, units)
 
         # Removing from the Pantry
         if add_ingr_form.remove.data:
+            if not qty:
+                flash("Can't remove without an amount","danger")
             if not current_user.getIngredientFromPantry(ingr_name):
                 flash(f"Tried to remove amount from an ingredient not present in the pantry.","danger")
             else:
                 if current_user.getIngredientAmount(ingr_name) < qty:
                     flash(f"Tried to remove more than is available in the pantry.","danger")
                 else:
-                    current_user.removeFromPantry(ingr_name, qty)
+                    current_user.removeFromPantry(ingr_name, qty, units)
+
+        # Setting an ingredient
+        if add_ingr_form.set.data:
+            current_user.setPantryIngredient(ingr_name, qty, date, units)
         
                 
         return redirect(url_for("my_pantry"))
