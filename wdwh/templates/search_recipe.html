@@ -6,7 +6,7 @@
         <div style="border-style: solid; padding: 10px; margin: 10px; border-color: lightgray;">
             <h3>{{recipe.name}} </h3>
             <p>
-                {% set num = recipe.canMake() %}
+                {% set num = recipe.can_make() %}
                 {% if num > 0 %}
                     <i>Can make {{num}} of this recipe</i>
                 {% else %}
@@ -35,7 +35,7 @@
             {% if num == 0 %}
             <p style="color: red;">
                 Missing Ingredients:
-                {% for missing in recipe.missingIngredients() %}
+                {% for missing in recipe.missing_ingredients() %}
                     <br>{{missing[0]}} : {{missing[1]}}
                 {% endfor %}
             </p>
