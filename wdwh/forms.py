@@ -1,5 +1,13 @@
 """
 This file manages all the HTML forms used to collect user data
+
+This file acts as the VIEW in the MVC design pattern since it
+displays to users what information they can input to the system.
+
+The View presents the model's data to the user.
+The view knows how to access the model's data,
+but it does not know what this data means or what
+the user can do to manipulate it.
 """
 # pylint: disable=consider-using-f-string
 from flask_wtf import FlaskForm

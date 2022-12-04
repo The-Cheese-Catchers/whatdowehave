@@ -2,13 +2,8 @@
 Manages website routes
 Connects front-end with back-end
 
-This file acts as the VIEW and CONTROLLER in the MVC design pattern,
-since it presents the data and handles form inputs to update the model
-
-The View presents the model's data to the user.
-The view knows how to access the model's data,
-but it does not know what this data means or what
-the user can do to manipulate it.
+This file acts as the CONTROLLER in the MVC design pattern,
+since it handles form inputs to update the model
 
 The Controller exists between the view and the model.
 It listens to events triggered by the view (or another external source)
