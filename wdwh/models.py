@@ -165,6 +165,12 @@ class User(db.Model, UserMixin):
                 missing_ingrs.append((recipe_ingr.name, recipe_ingr.qty - pantry_ingr.qty))
         return missing_ingrs
 
+    def search_recipes(self, search_term):
+        """ Searches a User's recipes """
+        all_recipes = Recipe.query.filter_by(user_id=self.id).all()
+        valid_recipes = [r for r in all_recipes if search_term.lower() in r.name.lower()]
+        return valid_recipes
+
 
 class Recipe(db.Model):
     """ Class describing Recipes which have ingredients """
