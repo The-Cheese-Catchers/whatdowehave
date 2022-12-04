@@ -184,6 +184,7 @@ class Recipe(db.Model):
     name = db.Column(db.String(120), nullable=False)
     instructions = db.Column(db.Text)
     ingredients = db.relationship('RecipeIngredient', backref='recipe', lazy=True)
+    image = db.Column(db.LargeBinary,nullable=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
@@ -249,6 +250,7 @@ class PantryIngredient(Ingredient):
     def set_exp_date(self, date):
         """ Updates the expiration date """
         self.exp_date = date
+        db.session.commit()
 
 
 class RecipeIngredient(Ingredient):

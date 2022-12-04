@@ -16,9 +16,10 @@ the result of this action is then automatically reflected in the view.
 from flask import render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 from wdwh import app, db, bcrypt
-from wdwh.forms import (AddIngredientForm, EnterRecipeForm,
+from wdwh.forms import (AddIngredientForm, EnterRecipeForm, ExpirationDateForm,
                         LoginForm, RegistrationForm, SearchRecipeForm)
 from wdwh.models import User, PantryIngredient, RecipeIngredient, Recipe
+from datetime import date,datetime
 
 
 @app.route("/")
@@ -136,7 +137,8 @@ def my_pantry():
     - Displays each ingredient in a table with buttons to update or delete
     """
     add_ingr_form = AddIngredientForm()
-    if add_ingr_form.validate_on_submit():
+    set_expr_form = ExpirationDateForm()
+    if add_ingr_form.ingr_name.data and add_ingr_form.validate():
         # Capitalize all ingredients
         ingr_name = add_ingr_form.ingr_name.data.capitalize()
         qty = add_ingr_form.qty.data
@@ -168,9 +170,14 @@ def my_pantry():
             current_user.set_pantry_ingredient(ingr_name, qty, date, units)
 
         return redirect(url_for("my_pantry"))
+    if set_expr_form.date.data and set_expr_form.validate():
+        date = set_expr_form.date.data
+        ingr_id = set_expr_form.ingr_id.data
+
+        if set_expr_form.set.data:
+            expr_update(ingr_id,date)
     all_ingr = PantryIngredient.query.filter_by(user_id=current_user.id).all()
-    return render_template("pantry.html", title="My Pantry", add_form=add_ingr_form,
-            all_ingr=all_ingr)
+    return render_template("pantry.html", title="My Pantry", add_form=add_ingr_form, all_ingr=all_ingr,expr_form=set_expr_form)
 
 @app.route("/my_pantry/<int:ingredient_id>/delete", methods=["POST"])
 @login_required
@@ -184,6 +191,17 @@ def delete_ingredient(ingredient_id):
         abort(403)
     current_user.delete_from_pantry(ingr.name)
     flash(f"{ingr.name} has been deleted!", "success")
+    return redirect(url_for("my_pantry"))
+
+@app.route("/my_pantry/<int:ingredient_id>/expr_update/<string:expr_date>", methods=["POST"])
+@login_required
+def expr_update(ingredient_id,expr_date):
+    ingr = PantryIngredient.query.get_or_404(ingredient_id)
+    expr_date = datetime.combine(expr_date,datetime.min.time())
+    if ingr.user_id != current_user.id:
+        abort(403)
+    ingr.set_exp_date(expr_date)
+    flash(f"Expiration date has been set!", "success")
     return redirect(url_for("my_pantry"))
 
 @app.route("/search_recipe/<int:recipe_id>/update", methods=["GET","POST"])

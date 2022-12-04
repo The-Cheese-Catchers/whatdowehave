@@ -72,6 +72,15 @@ class AddIngredientForm(FlaskForm):
         if qty.data < 1:
             raise ValidationError('Improper amount.')
 
+class ExpirationDateForm(FlaskForm):
+    """
+    Expiration Date form
+    - Defines the datatypes and variables for each input box the user interacts with when setting expr date
+    """
+    date = DateField("Expiration Date", validators=[DataRequired()])
+    set = SubmitField("Set Expiration")
+    ingr_id = StringField("Ingredient ID",validators=[Optional()])
+
 class EnterRecipeForm(FlaskForm):
     """
     Custom recipe data form
