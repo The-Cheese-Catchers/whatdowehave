@@ -1,6 +1,16 @@
 """
 Manages website routes
 Connects front-end with back-end
+
+This file acts as the CONTROLLER in the MVC design pattern,
+since it handles form inputs to update the model
+
+The Controller exists between the view and the model.
+It listens to events triggered by the view (or another external source)
+and executes the appropriate reaction to these events.
+In most cases, the reaction is to call a method on the model.
+Since the view and the model are connected through a notification mechanism,
+the result of this action is then automatically reflected in the view.
 """
 # pylint: disable=consider-using-f-string
 from flask import render_template, flash, redirect, url_for, request, abort
@@ -123,9 +133,15 @@ def search_recipe():
     - Allows the user to search for many other recipes by querying an API
     """
     search_form = SearchRecipeForm()
-    # if search_form.validate_on_submit():
+    if search_form.validate_on_submit():
         # recipe_name = search_form.query.data
         # SEARCH API FOR THIS RECIPE AND LIST OUT DETAILS ON SEPARATE PAGE
+        search_term = search_form.query.data
+        searched_recipes = current_user.search_recipes(search_term)
+        flash(f"Search results for {search_term}","success")
+        return render_template("search_recipe.html", title="Search Recipe",
+                form=search_form, recipes=searched_recipes, RecipeIngredient=RecipeIngredient)
+
     all_recipes = Recipe.query.filter_by(user_id=current_user.id).all()
     return render_template("search_recipe.html", title="Search Recipe",
                 form=search_form, recipes=all_recipes, RecipeIngredient=RecipeIngredient)

@@ -5,6 +5,12 @@ This file contains the classes:
 - Ingredient
 - PantryIngredient (extends Ingredient)
 - RecipeIngredient (extends Ingredient)
+
+This file acts as the MODEL in the MVC design pattern, since it holds
+the class structure and database functions.
+
+The Model contains only the pure application data,
+it contains no logic describing how to present the data to a user.
 """
 # pylint: disable=consider-using-f-string
 from flask_login import UserMixin
@@ -164,6 +170,12 @@ class User(db.Model, UserMixin):
             elif pantry_ingr.qty < recipe_ingr.qty:
                 missing_ingrs.append((recipe_ingr.name, recipe_ingr.qty - pantry_ingr.qty))
         return missing_ingrs
+
+    def search_recipes(self, search_term):
+        """ Searches a User's recipes """
+        all_recipes = Recipe.query.filter_by(user_id=self.id).all()
+        valid_recipes = [r for r in all_recipes if search_term.lower() in r.name.lower()]
+        return valid_recipes
 
 
 class Recipe(db.Model):
