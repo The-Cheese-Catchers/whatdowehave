@@ -238,6 +238,7 @@ class PantryIngredient(Ingredient):
     def set_exp_date(self, date):
         """ Updates the expiration date """
         self.exp_date = date
+        db.session.commit()
 
 
 class RecipeIngredient(Ingredient):

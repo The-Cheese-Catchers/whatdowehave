@@ -10,7 +10,7 @@ DBCONNSTRING = os.getenv("DB_CONN")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ENV_TYPE = os.getenv("ENV_TYPE")
 
-ENV = ENV_TYPE
+print(ENV_TYPE)
 
 
 app.config["SECRET_KEY"] = SECRET_KEY

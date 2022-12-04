@@ -65,8 +65,13 @@ class AddIngredientForm(FlaskForm):
             raise ValidationError('Improper amount.')
 
 class ExpirationDateForm(FlaskForm):
-    date = DateField("Expiration Date", validators=[Optional()])
-    add = SubmitField("Set")
+    """
+    Expiration Date form
+    - Defines the datatypes and variables for each input box the user interacts with when setting expr date
+    """
+    date = DateField("Expiration Date", validators=[DataRequired()])
+    set = SubmitField("Set Expiration")
+    ingr_id = StringField("Ingredient ID",validators=[Optional()])
 
 class EnterRecipeForm(FlaskForm):
     """

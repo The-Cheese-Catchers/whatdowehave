@@ -3,44 +3,45 @@
     <h1>Welcome to your recipes!</h1>
     {% if recipes %}
         {% for recipe in recipes%}
-        <div style="border-style: solid; padding: 10px; margin: 10px; border-color: lightgray;">
-            <h3>{{recipe.name}} </h3>
-            <p>
-                {% set num = recipe.can_make() %}
-                {% if num > 0 %}
-                    <i>Can make {{num}} of this recipe</i>
-                {% else %}
-                    <p><i>Can't make this recipe, see missing ingredients below</i></p>
-                {% endif %}
-            </p>
-            {% if num > 0 %}
-            <a href="{{ url_for('make_recipe',recipe_id=recipe.id) }}">
-                <button class="btn btn-success btn-sm">Make</button></a>
-            {% endif %}
-            <a href="{{ url_for('update_recipe',recipe_id=recipe.id) }}">
-                <button class="btn btn-sm">Update</button></a>
-            <a href="{{ url_for('delete_recipe',recipe_id=recipe.id) }}">
-                <button class="btn btn-danger btn-sm">Delete</button></a>
-            {% if RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()%}
-                <p><i>Ingredients:</i>
-                {% for ingr in RecipeIngredient.query.filter_by(recipe_id=recipe.id).all() %}
-                <br>{{ingr.name}} : {{ingr.qty}}
-                {% endfor %}
+            <div style="border-style: solid; padding: 10px; margin: 10px; border-color: lightgray;">
+                <h3>{{recipe.name}} </h3>
+                <p>
+                    {% set num = recipe.can_make() %}
+                    {% if num > 0 %}
+                        <i>Can make {{num}} of this recipe</i>
+                    {% else %}
+                        <p><i>Can't make this recipe, see missing ingredients below</i></p>
+                    {% endif %}
                 </p>
-            {% else %}
-                <p><i>No ingredients for this recipe were entered.</i></p>
-            {% endif %}
-            <p><i>Instructions:</i><br>
-            {{recipe.instructions}}</p>
-            {% if num == 0 %}
-            <p style="color: red;">
-                Missing Ingredients:
-                {% for missing in recipe.missing_ingredients() %}
-                    <br>{{missing[0]}} : {{missing[1]}}
-                {% endfor %}
-            </p>
-            {% endif %}
-        </div>
+                {% if num > 0 %}
+                    <a href="{{ url_for('make_recipe',recipe_id=recipe.id) }}">
+                        <button class="btn btn-success btn-sm">Make</button></a>
+                {% endif %}
+                <a href="{{ url_for('update_recipe',recipe_id=recipe.id) }}">
+                    <button class="btn btn-sm">Update</button></a>
+                <a href="{{ url_for('delete_recipe',recipe_id=recipe.id) }}">
+                    <button class="btn btn-danger btn-sm">Delete</button></a>
+                {% if RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()%}
+                    <p><i>Ingredients:</i>
+                    {% for ingr in RecipeIngredient.query.filter_by(recipe_id=recipe.id).all() %}
+                    <br>{{ingr.name}} : {{ingr.qty}}
+                    {% endfor %}
+                    </p>
+                {% else %}
+                    <p><i>No ingredients for this recipe were entered.</i></p>
+                {% endif %}
+                <p><i>Instructions:</i><br>
+                {{recipe.instructions}}</p>
+                {% if num == 0 %}
+                    <p style="color: red;">
+                        Missing Ingredients:
+                        {% for missing in recipe.missing_ingredients() %}
+                            <br>{{missing[0]}} : {{missing[1]}}
+                        {% endfor %}
+                    </p>
+                {% endif %}
+            </div>
+        {% endfor %} 
     {% else %}
         You currently have no recipes added. Try adding some!
     {% endif %}

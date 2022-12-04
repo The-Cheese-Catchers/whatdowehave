@@ -6,9 +6,10 @@ Connects front-end with back-end
 from flask import render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 from wdwh import app, db, bcrypt
-from wdwh.forms import (AddIngredientForm, EnterRecipeForm,
+from wdwh.forms import (AddIngredientForm, EnterRecipeForm, ExpirationDateForm,
                         LoginForm, RegistrationForm, SearchRecipeForm)
 from wdwh.models import User, PantryIngredient, RecipeIngredient, Recipe
+from datetime import date,datetime
 
 
 @app.route("/")
@@ -173,9 +174,10 @@ def my_pantry():
         return redirect(url_for("my_pantry"))
     if set_expr_form.validate_on_submit():
         date = set_expr_form.date.data
+        ingr_id = set_expr_form.ingr_id.data
 
-        if set_expr_form.add.data:
-            current_user.setExpr
+        if set_expr_form.set.data:
+            expr_update(ingr_id,date)
     all_ingr = PantryIngredient.query.filter_by(user_id=current_user.id).all()
     return render_template("pantry.html", title="My Pantry", add_form=add_ingr_form, all_ingr=all_ingr,expr_form=set_expr_form)
 
@@ -197,10 +199,10 @@ def delete_ingredient(ingredient_id):
 @login_required
 def expr_update(ingredient_id,expr_date):
     ingr = PantryIngredient.query.get_or_404(ingredient_id)
+    expr_date = datetime.combine(expr_date,datetime.min.time())
     if ingr.user_id != current_user.id:
         abort(403)
-    print(expr_date)
-    #ingr.setExpDate(expr_date)
+    ingr.set_exp_date(expr_date)
     flash(f"Expiration date has been set!", "success")
     return redirect(url_for("my_pantry"))
 
