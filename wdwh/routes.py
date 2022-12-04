@@ -104,9 +104,15 @@ def search_recipe():
     - Allows the user to search for many other recipes by querying an API
     """
     search_form = SearchRecipeForm()
-    # if search_form.validate_on_submit():
+    if search_form.validate_on_submit():
         # recipe_name = search_form.query.data
         # SEARCH API FOR THIS RECIPE AND LIST OUT DETAILS ON SEPARATE PAGE
+        search_term = search_form.query.data
+        searched_recipes = current_user.search_recipes(search_term)
+        flash(f"Search results for {search_term}","success")
+        return render_template("search_recipe.html", title="Search Recipe",
+                form=search_form, recipes=searched_recipes, RecipeIngredient=RecipeIngredient)
+
     all_recipes = Recipe.query.filter_by(user_id=current_user.id).all()
     return render_template("search_recipe.html", title="Search Recipe",
                 form=search_form, recipes=all_recipes, RecipeIngredient=RecipeIngredient)
