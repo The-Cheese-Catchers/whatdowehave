@@ -31,24 +31,6 @@ def home():
     """
     return render_template("home.html", title="Home")
 
-@app.route('/view')
-def view():
-    # fetches all the users
-    users = User.query.all()
-    # response list consisting user details
-    response = list()
- 
-    for user in users:
-        response.append({
-            "id" : user.id,
-            "name" : user.username
-        })
- 
-    return make_response({
-        'status' : 'success',
-        'message': response
-    }, 200)
-
 @app.route("/register", methods=["GET","POST"])
 def register():
     """
