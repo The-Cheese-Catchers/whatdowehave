@@ -106,6 +106,7 @@ def search_recipe():
 @login_required
 def my_pantry():
     add_ingr_form = AddIngredientForm()
+    set_expr_form = ExpirationDateForm()
     if add_ingr_form.validate_on_submit():
         # Capitalize all ingredients
         ingr_name = add_ingr_form.ingr_name.data.capitalize()
@@ -128,8 +129,13 @@ def my_pantry():
         
                 
         return redirect(url_for("my_pantry"))
+    if set_expr_form.validate_on_submit():
+        date = set_expr_form.date.data
+
+        if set_expr_form.add.data:
+            current_user.setExpr
     all_ingr = PantryIngredient.query.filter_by(user_id=current_user.id).all()
-    return render_template("pantry.html", title="My Pantry", add_form=add_ingr_form, all_ingr=all_ingr)
+    return render_template("pantry.html", title="My Pantry", add_form=add_ingr_form, all_ingr=all_ingr,expr_form=set_expr_form)
 
 @app.route("/my_pantry/<int:ingredient_id>/delete", methods=["POST"])
 @login_required
@@ -139,6 +145,17 @@ def delete_ingredient(ingredient_id):
         abort(403)
     current_user.deleteFromPantry(ingr.name)
     flash(f"{ingr.name} has been deleted!", "success")
+    return redirect(url_for("my_pantry"))
+
+@app.route("/my_pantry/<int:ingredient_id>/expr_update/<string:expr_date>", methods=["POST"])
+@login_required
+def expr_update(ingredient_id,expr_date):
+    ingr = PantryIngredient.query.get_or_404(ingredient_id)
+    if ingr.user_id != current_user.id:
+        abort(403)
+    print(expr_date)
+    #ingr.setExpDate(expr_date)
+    flash(f"Expiration date has been set!", "success")
     return redirect(url_for("my_pantry"))
 
 @app.route("/search_recipe/<int:recipe_id>/update", methods=["GET","POST"])

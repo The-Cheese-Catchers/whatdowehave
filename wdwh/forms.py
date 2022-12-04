@@ -39,6 +39,10 @@ class AddIngredientForm(FlaskForm):
         if qty.data < 1:
             raise ValidationError('Improper amount.')
 
+class ExpirationDateForm(FlaskForm):
+    date = DateField("Expiration Date", validators=[Optional()])
+    add = SubmitField("Set")
+
 class EnterRecipeForm(FlaskForm):
     recipe_name = StringField("Recipe Name", validators=[DataRequired()])
     ingredients = TextAreaField("Ingredients: enter name, amount followed by a ; example: Eggs, 4; Milk, 1",
