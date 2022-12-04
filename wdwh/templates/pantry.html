@@ -10,12 +10,18 @@
             <tr>
                 <th>Ingredient Name</th>
                 <th>Amount</th>
+                <th>Unit</th>
                 <th>Expiration Date</th>
             </tr>
             {% for ingr in all_ingr %}
                 <tr>
                     <td>{{ingr.name}}</td>
                     <td>{{ingr.qty}}</td>
+                    <td>
+                        {% if ingr.units %}
+                            {{ingr.units}}
+                        {% endif %}
+                    </td>
                     <td>{% if ingr.exp_date %}
                         {{ingr.exp_date}}
                         {% endif %}
@@ -151,6 +157,7 @@
                 {% else %}
                     {{ add_form.ingr_name(class="form-control form-control-lg") }}
                 {% endif %}
+                <div style="float: left; width: 30%;">
                 {{ add_form.qty.label(class="form-control-label") }}
                 {% if add_form.qty.errors %}
                     {{ add_form.qty(class="form-control form-control-lg is-invalid") }}
@@ -162,6 +169,20 @@
                 {% else %}
                     {{ add_form.qty(class="form-control form-control-lg") }}
                 {% endif %}
+                </div>
+                <div style="float: right; width: 60%;">
+                {{ add_form.units.label(class="form-control-label") }}
+                {% if add_form.units.errors %}
+                    {{ add_form.qty(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in add_form.qty.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ add_form.units(class="form-control form-control-lg") }}
+                {% endif %}
+                </div>
                 {{ add_form.date.label(class="form-control-label") }}
                 {% if add_form.date.errors %}
                     {{ add_form.date(class="form-control form-control-lg is-invalid") }}
@@ -176,8 +197,9 @@
             </div>
         </fieldset>
         <div class="form-group">
-            {{ add_form.add(class="btn btn-outline-info") }}
-            {{ add_form.remove(class="btn btn-outline-info") }}
+            {{ add_form.add(class="btn btn-outline-success") }}
+            {{ add_form.remove(class="btn btn-outline-danger") }}
+            {{ add_form.set(class="btn btn-outline-info") }}
         </div>
     </form>
 </div>
