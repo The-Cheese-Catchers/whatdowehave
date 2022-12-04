@@ -140,7 +140,7 @@ def my_pantry():
     """
     add_ingr_form = AddIngredientForm()
     set_expr_form = ExpirationDateForm()
-    if add_ingr_form.validate_on_submit():
+    if add_ingr_form.ingr_name.data and add_ingr_form.validate():
         # Capitalize all ingredients
         ingr_name = add_ingr_form.ingr_name.data.capitalize()
         qty = add_ingr_form.qty.data
@@ -172,7 +172,7 @@ def my_pantry():
             current_user.set_pantry_ingredient(ingr_name, qty, date, units)
 
         return redirect(url_for("my_pantry"))
-    if set_expr_form.validate_on_submit():
+    if set_expr_form.date.data and set_expr_form.validate():
         date = set_expr_form.date.data
         ingr_id = set_expr_form.ingr_id.data
 

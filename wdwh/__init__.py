@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 
-DBCONNSTRING = os.getenv("DB_CONN")
+DBCONNSTRING = os.getenv("DATABASE_URL")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ENV_TYPE = os.getenv("ENV_TYPE")
 

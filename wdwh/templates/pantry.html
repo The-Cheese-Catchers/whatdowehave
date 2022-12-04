@@ -54,7 +54,7 @@
                                                                 {% endfor %}
                                                             </div>
                                                         {% else %}
-                                                            {{ expr_form.date(class="form-control form-control-md") }}
+                                                            {{ expr_form.date(value=ingr.exp_date.date(),class="form-control form-control-md") }}
                                                         {% endif %}
                                                     </div>
                                                 </fieldset>                                        
@@ -196,7 +196,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ add_form.date(class="form-control form-control-lg") }}
+                    {{ add_form.date(value="None",class="form-control form-control-lg") }}
                 {% endif %}
             </div>
         </fieldset>
