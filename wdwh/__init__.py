@@ -10,12 +10,13 @@ DBCONNSTRING = os.getenv("DATABASE_URL")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ENV_TYPE = os.getenv("ENV_TYPE")
 
-print(ENV_TYPE)
-
+if DBCONNSTRING and DBCONNSTRING.startswith("postgres://"):
+    DBCONNSTRING = DBCONNSTRING.replace("postgres://","postgresql://",1)
 
 app.config["SECRET_KEY"] = SECRET_KEY
 #app.config["SQLALCHEMY_DATABASE_URI"]= f"mysql+mysqldb://root:{PASSWORD}@{PUBLIC_IP_ADDRESS}/{DBNAME}?unix_socket=/cloudsql/{PROJECT_ID}:{INSTANCE_NAME}"
 if ENV_TYPE == 'prod':
+
     app.config["SQLALCHEMY_DATABASE_URI"]= DBCONNSTRING
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:root@localhost/test"
