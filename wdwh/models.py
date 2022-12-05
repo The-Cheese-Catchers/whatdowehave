@@ -1,12 +1,28 @@
-from wdwh import db, login_manager
+"""
+This file contains the classes:
+- User
+- Recipe
+- Ingredient
+- PantryIngredient (extends Ingredient)
+- RecipeIngredient (extends Ingredient)
+
+This file acts as the MODEL in the MVC design pattern, since it holds
+the class structure and database functions.
+
+The Model contains only the pure application data,
+it contains no logic describing how to present the data to a user.
+"""
+# pylint: disable=consider-using-f-string
 from flask_login import UserMixin
+from wdwh import db, login_manager
 
 @login_manager.user_loader
 def load_user(user_id):
+    """ Loads the specific user """
     return User.query.get(int(user_id))
 
-# Users have PantryIngredients and Recipes
 class User(db.Model, UserMixin):
+    """ Class describing Users who have pantries and recipes """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
@@ -16,57 +32,59 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}')"
 
-    # Pantry Functions
-    def getIngredientFromPantry(self, ingr_name):
+    def get_ingredient_from_pantry(self, ingr_name):
+        """ Gets the ingredient object from the pantry by name """
         return PantryIngredient.query.filter_by(name=ingr_name,user_id=self.id).first()
 
-    # Sets a PantryIngredient
-    def setPantryIngredient(self, ingr_name, qty, date, units):
-        present_ingr = self.getIngredientFromPantry(ingr_name)
+    def set_pantry_ingredient(self, ingr_name, qty, date, units):
+        """ Sets a pantry object for a user """
+        present_ingr = self.get_ingredient_from_pantry(ingr_name)
         if present_ingr:
-            present_ingr.setQty(qty)
-            present_ingr.setExpDate(date)
-            present_ingr.setUnits(units)
+            present_ingr.set_qty(qty)
+            present_ingr.set_exp_date(date)
+            present_ingr.set_units(units)
         else:
-            ingr = PantryIngredient(name=ingr_name,qty=qty,units=units,user_id=self.id,exp_date=date)
+            ingr = PantryIngredient(name=ingr_name,qty=qty,
+                    units=units,user_id=self.id,exp_date=date)
             db.session.add(ingr)
         db.session.commit()
 
-    # Adds PantryIngredient to the User
-    def addToPantry(self, ingr_name, qty, date, units):
-        present_ingr = self.getIngredientFromPantry(ingr_name)
+    def add_to_pantry(self, ingr_name, qty, date, units):
+        """ Adds a pantry ingredient to a user's pantry """
+        present_ingr = self.get_ingredient_from_pantry(ingr_name)
         if present_ingr:
             present_ingr.increase(qty)
-            present_ingr.setExpDate(date)
-            present_ingr.setUnits(units)
+            present_ingr.set_exp_date(date)
+            present_ingr.set_units(units)
         else:
-            ingr = PantryIngredient(name=ingr_name,qty=qty,units=units,user_id=self.id,exp_date=date)
+            ingr = PantryIngredient(name=ingr_name,qty=qty,units=units,
+                    user_id=self.id,exp_date=date)
             db.session.add(ingr)
         db.session.commit()
-        return True
 
-    # Retrieves ingredient amount
-    def getIngredientAmount(self, ingr_name):
-        present_ingr = self.getIngredientFromPantry(ingr_name)
+    def get_ingredient_amount(self, ingr_name):
+        """ Gets the amount of specific ingredient in the pantry """
+        present_ingr = self.get_ingredient_from_pantry(ingr_name)
+        if not present_ingr:
+            return 0
         return present_ingr.qty
 
-    # Removes a set amount from the ingredient in the pantry
-    def removeFromPantry(self, ingr_name, qty, units):
-        present_ingr = self.getIngredientFromPantry(ingr_name)
+    def remove_from_pantry(self, ingr_name, qty, units):
+        """ Removes an amount of an ingredient from the pantry """
+        present_ingr = self.get_ingredient_from_pantry(ingr_name)
         present_ingr.decrease(qty)
-        present_ingr.setUnits(units)
+        present_ingr.set_units(units)
         db.session.commit()
-        return True
-    # Delete an Ingredient completely from a User
-    def deleteFromPantry(self, ingr_name):
-        present_ingr = self.getIngredientFromPantry(ingr_name)
+
+    def delete_from_pantry(self, ingr_name):
+        """ Deletes an ingredient from a user's pantry """
+        present_ingr = self.get_ingredient_from_pantry(ingr_name)
         if present_ingr:
             db.session.delete(present_ingr)
             db.session.commit()
-        return True
 
-    # Adds ingredients to a specific recipe
-    def addIngredientsToRecipe(self, recipe, ingredients):
+    def __add_ingredients_to_recipe(self, recipe, ingredients):
+        """ Adds ingredients to a specific recipe """
         # ingredients is still in the form (name1, qty1; name2, qty2, ...)
         ingr_qty = ingredients.split(';')
         for each_ingr in ingr_qty:
@@ -81,8 +99,8 @@ class User(db.Model, UserMixin):
             db.session.add(ingr)
         return True
 
-    # Removes ingredients from a specific recipe
-    def removeIngredientsFromRecipe(self, recipe):
+    def __remove_ingredients_from_recipe(self, recipe):
+        """ Removes ingredients from a specific recipe """
         present_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
         for present_ingr in present_ingrs:
             db.session.delete(present_ingr)
@@ -92,111 +110,110 @@ class User(db.Model, UserMixin):
         recipe = Recipe(name=name, instructions=instructions,user_id=self.id,image=image)
         db.session.add(recipe)
         db.session.commit()
-        
-        if self.addIngredientsToRecipe(recipe, ingredients):
+
+        if self.__add_ingredients_to_recipe(recipe, ingredients):
             db.session.commit()
             return True
         return False
     def modifyRecipe(self, recipe, name, ingredients, instructions, image):
+        """ Modifies a user's recipe """
         # Update info
         recipe.name = name
         recipe.instructions = instructions
         recipe.image = image
         # Update ingredients
-        self.removeIngredientsFromRecipe(recipe)
-        
+        self.__remove_ingredients_from_recipe(recipe)
+
         # Add new ingredients
-        if self.addIngredientsToRecipe(recipe, ingredients):
+        if self.__add_ingredients_to_recipe(recipe, ingredients):
             db.session.commit()
             return True
         return False
 
-    # Deletes a User's Recipe
-    def deleteRecipe(self, recipe):
-        self.removeIngredientsFromRecipe(recipe)
+    def delete_recipe(self, recipe):
+        """ Deletes a user's recipe """
+        self.__remove_ingredients_from_recipe(recipe)
         db.session.delete(recipe)
         db.session.commit()
 
-    # Says how many times a recipe can be made
-    def canMakeRecipe(self, recipe):
+    def can_make_recipe(self, recipe):
+        """ Checks how many times a recipe can be made """
         recipe_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
-        maxMakes = 1e9
+        max_makes = 1e9
         for recipe_ingr in recipe_ingrs:
-            pantry_ingr = self.getIngredientFromPantry(recipe_ingr.name)
+            pantry_ingr = self.get_ingredient_from_pantry(recipe_ingr.name)
             if not pantry_ingr:
                 return 0
             if pantry_ingr.qty < recipe_ingr.qty:
                 return 0
-            else:
-                maxMakes = min(maxMakes, pantry_ingr.qty//recipe_ingr.qty)
-        return maxMakes
-    
-    # Makes recipe using pantry
-    def makeRecipe(self, recipe):
+            max_makes = min(max_makes, pantry_ingr.qty//recipe_ingr.qty)
+        return max_makes
+
+    def make_recipe(self, recipe):
+        """ Makes a recipe using the user's pantry """
         recipe_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
         for recipe_ingr in recipe_ingrs:
-            pantry_ingr = self.getIngredientFromPantry(recipe_ingr.name)
+            pantry_ingr = self.get_ingredient_from_pantry(recipe_ingr.name)
             pantry_ingr.decrease(recipe_ingr.qty)
-    
-    # Sees which ingredients are missing to make a recipe
-    def missingIngredients(self, recipe):
+        db.session.commit()
+
+    def missing_ingredients(self, recipe):
+        """ Finds missing ingredients to make a recipe """
         missing_ingrs = []
         recipe_ingrs = RecipeIngredient.query.filter_by(recipe_id=recipe.id).all()
         for recipe_ingr in recipe_ingrs:
-            pantry_ingr = self.getIngredientFromPantry(recipe_ingr.name)
+            pantry_ingr = self.get_ingredient_from_pantry(recipe_ingr.name)
             if not pantry_ingr:
                 missing_ingrs.append((recipe_ingr.name, recipe_ingr.qty))
             elif pantry_ingr.qty < recipe_ingr.qty:
                 missing_ingrs.append((recipe_ingr.name, recipe_ingr.qty - pantry_ingr.qty))
         return missing_ingrs
 
-# Recipe Class
-# - Owned by Users
-# - Has RecipeIngredients
+    def search_recipes(self, search_term):
+        """ Searches a User's recipes """
+        all_recipes = Recipe.query.filter_by(user_id=self.id).all()
+        valid_recipes = [r for r in all_recipes if search_term.lower() in r.name.lower()]
+        return valid_recipes
+
+
 class Recipe(db.Model):
+    """ Class describing Recipes which have ingredients """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     instructions = db.Column(db.Text)
     image = db.Column(db.LargeBinary, nullable=True)
     ingredients = db.relationship('RecipeIngredient', backref='recipe', lazy=True)
+    image = db.Column(db.LargeBinary,nullable=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
         return f"Recipe('{self.name}','{self.instructions}','{self.ingredients}','{self.image}')"
 
-    # Retrieves an Ingredient from the recipe
-    def getIngredient(self, ingredient):
+    def get_ingredient(self, ingredient):
+        """ Retrieves an ingredient from the recipe """
         return RecipeIngredient.query.filter_by(name=ingredient,recipe_id=self.id).first()
-    # Modifies Recipe
-    def modifyRecipe(self, ingredient, qty):
-        ingr = self.getIngredient(ingredient)
-        if ingr:
-            if qty < 0:
-                ingr.decrease(qty)
-            else:
-                ingr.increase(qty)
-        else:
-            new_ingr = RecipeIngredient(name=ingredient, qty=qty, recipe_id=self.id)
-            db.session.add(new_ingr)
-        db.session.commit()
 
-    # Checks whether a Recipe can be made by the User
-    def canMake(self):
-        return self.owner.canMakeRecipe(self)
-    # Makes Recipe for User
+    def can_make(self):
+        """ Checks whether a Recipe can be made by the User """
+        return self.owner.can_make_recipe(self)
+
     def make(self):
-        self.owner.makeRecipe(self)
-    # Returns the missing ingredients to make this recipe for the User
-    def missingIngredients(self):
-        return self.owner.missingIngredients(self)
-    # Updates the Recipe instructions
-    def updateInstr(self,text):
+        """ Makes the recipe for a user """
+        self.owner.make_recipe(self)
+
+    def missing_ingredients(self):
+        """ Returns the missing ingredients to make this recipe for the user """
+        return self.owner.missing_ingredients(self)
+
+    def update_instr(self,text):
+        """ Updates the recipe instructions """
         self.instructions = text
         db.session.commit()
 
-# Abstract Ingredient Object
+
 class Ingredient(db.Model):
+    """ Abstract class which describes Ingredients """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     qty = db.Column(db.Integer, nullable=False)
@@ -204,32 +221,37 @@ class Ingredient(db.Model):
 
     def __repr__(self):
         return f"Ingredient('{self.name}', '{self.qty}')"
-    
-    def setQty(self, new_qty):
+
+    def set_qty(self, new_qty):
+        """ Sets the quantity for an ingredient """
         if new_qty:
             self.qty = new_qty
-    def setUnits(self, new_units):
+
+    def set_units(self, new_units):
+        """ Sets the units for an ingredient """
         if new_units:
             self.units = new_units
 
-# Extends Ingredient
-# - Links Ingredients to Users
-# - Has expiration date
+
 class PantryIngredient(Ingredient):
+    """ Extends Ingredient to have a User and expiration date """
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     exp_date = db.Column(db.DateTime)
 
-    # Increases the quantity
     def increase(self, qty=1):
+        """ Increases the quantity for a pantry ingredient """
         self.qty += qty
-    # Decreases the quantity
-    def decrease(self, qty=1):
-        self.qty -= qty
-    # Updates the expiration date
-    def setExpDate(self, date):
-        self.exp_date = date    
 
-# Extends Ingredient
-# - Links Ingredients to Recipe
+    def decrease(self, qty=1):
+        """ Decreases the quantity for a pantry ingredient """
+        self.qty -= qty
+
+    def set_exp_date(self, date):
+        """ Updates the expiration date """
+        self.exp_date = date
+        db.session.commit()
+
+
 class RecipeIngredient(Ingredient):
+    """ Extends Ingredient to have a Recipe """
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'))
